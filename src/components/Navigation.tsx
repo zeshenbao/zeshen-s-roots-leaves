@@ -10,6 +10,7 @@ const navItems = [
   { label: 'Ecosystem', href: '#ecosystem' },
   { label: 'Projects', href: '#projects' },
   { label: 'Experience', href: '#experience' },
+  { label: 'Academics', href: '#academics' },
   { label: 'Contact', href: '#contact' },
 ];
 
