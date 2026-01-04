@@ -3,6 +3,7 @@ import { CinematicBackground } from '@/components/CinematicBackground';
 import { Navigation } from '@/components/Navigation';
 import { BackToTop } from '@/components/BackToTop';
 import { SkipLink } from '@/components/SkipLink';
+import { SEOHead } from '@/components/SEOHead';
 import { HeroSection } from '@/components/sections/HeroSection';
 import { AboutSection } from '@/components/sections/AboutSection';
 import { SkillEcosystemSection } from '@/components/sections/SkillEcosystemSection';
@@ -40,9 +41,8 @@ const Index = () => {
 
   return (
     <>
-      {/* SEO */}
-      <title>{person.name} — Engineering Physics × AI/ML</title>
-      <meta name="description" content={`${person.headline}. Portfolio showcasing projects in generative modeling, reinforcement learning, and robotics.`} />
+      {/* SEO - JSON-LD schemas, canonical URL */}
+      <SEOHead />
       
       {/* Skip link for keyboard users */}
       <SkipLink targetId="main-content" />
