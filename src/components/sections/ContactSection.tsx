@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 
 export function ContactSection() {
   return (
-    <section id="contact" className="py-24 px-6" aria-label="Contact">
-      <div className="container max-w-4xl mx-auto">
+    <section id="contact" className="py-24 px-6" aria-labelledby="contact-heading">
+      <div className="container max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -16,7 +16,7 @@ export function ContactSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4">
+          <h2 id="contact-heading" className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4">
             Get in Touch
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">

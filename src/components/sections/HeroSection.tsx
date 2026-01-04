@@ -10,9 +10,9 @@ export function HeroSection() {
     <section 
       id="home" 
       className="relative min-h-screen flex items-center justify-center px-6 pt-20"
-      aria-label="Introduction"
+      aria-labelledby="hero-heading"
     >
-      <div className="container max-w-4xl mx-auto text-center">
+      <div className="container max-w-5xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -23,7 +23,10 @@ export function HeroSection() {
             {person.location}
           </Badge>
           
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-foreground mb-6 leading-tight">
+          <h1 
+            id="hero-heading"
+            className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-foreground mb-6 leading-tight"
+          >
             {person.name}
           </h1>
           

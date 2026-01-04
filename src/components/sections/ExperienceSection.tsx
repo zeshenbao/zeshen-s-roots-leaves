@@ -21,15 +21,15 @@ export function ExperienceSection() {
   });
 
   return (
-    <section id="experience" className="py-24 px-6 bg-muted/20" aria-label="Experience">
-      <div className="container max-w-4xl mx-auto">
+    <section id="experience" className="py-24 px-6" aria-labelledby="experience-heading">
+      <div className="container max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4">
+          <h2 id="experience-heading" className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4">
             Experience
           </h2>
           <p className="text-muted-foreground mb-12">

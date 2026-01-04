@@ -1,7 +1,9 @@
 import { CinematicBackground } from '@/components/CinematicBackground';
 import { Navigation } from '@/components/Navigation';
 import { CommandPalette } from '@/components/CommandPalette';
+import { BackToTop } from '@/components/BackToTop';
 import { HeroSection } from '@/components/sections/HeroSection';
+import { AboutSection } from '@/components/sections/AboutSection';
 import { SkillEcosystemSection } from '@/components/sections/SkillEcosystemSection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { ExperienceSection } from '@/components/sections/ExperienceSection';
@@ -13,15 +15,17 @@ const Index = () => {
   return (
     <>
       {/* SEO */}
-      <title>{person.name} | Engineering Physics & AI/ML Portfolio</title>
+      <title>{person.name} — Engineering Physics × AI/ML</title>
       <meta name="description" content={`${person.headline}. Portfolio showcasing projects in generative modeling, reinforcement learning, and robotics.`} />
       
       <CinematicBackground />
       <Navigation />
       <CommandPalette />
+      <BackToTop />
       
       <main className="relative z-10">
         <HeroSection />
+        <AboutSection />
         <SkillEcosystemSection />
         <ProjectsSection />
         <ExperienceSection />

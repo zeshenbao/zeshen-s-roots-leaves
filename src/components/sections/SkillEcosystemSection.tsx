@@ -401,20 +401,22 @@ export function SkillEcosystemSection() {
   return (
     <section 
       id="ecosystem" 
-      className="relative py-24 px-6 min-h-screen"
-      aria-label="Skill Ecosystem - Interactive tree visualization"
+      className="relative py-24 px-6 min-h-screen bg-muted/10"
+      aria-labelledby="ecosystem-heading"
     >
-      <div className="container max-w-7xl mx-auto">
+      <div className="container max-w-5xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-8">
-          <p className="text-sm uppercase tracking-widest text-primary mb-2">Living Knowledge Tree</p>
-          <h2 className="text-3xl md:text-4xl font-display font-semibold text-foreground mb-4">
-            Skill <span className="text-gradient">Ecosystem</span>
+          <h2 
+            id="ecosystem-heading"
+            className="font-display text-3xl md:text-4xl font-medium text-foreground mb-4"
+          >
+            Skill Ecosystem
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
-            <strong>Roots</strong> (foundations) feed through the <strong>trunk</strong> (identity), 
-            branching into specialized areas that produce <strong>leaves</strong> (projects, research, publications).
-            <span className="text-secondary"> ★ Golden leaves are top outcomes.</span>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm leading-relaxed">
+            An interactive visualization of interconnected competencies. <strong>Roots</strong> (foundations) 
+            feed through the trunk into specialized <strong>branches</strong>, producing <strong>leaves</strong> (projects, research).
+            <span className="text-primary ml-1">★ Golden leaves are top outcomes.</span>
           </p>
         </div>
 
