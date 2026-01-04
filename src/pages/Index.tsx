@@ -1,5 +1,6 @@
 import { CinematicBackground } from '@/components/CinematicBackground';
 import { Navigation } from '@/components/Navigation';
+import { CommandPalette } from '@/components/CommandPalette';
 import { HeroSection } from '@/components/sections/HeroSection';
 import { SkillEcosystemSection } from '@/components/sections/SkillEcosystemSection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
@@ -16,6 +17,7 @@ const Index = () => {
       
       <CinematicBackground />
       <Navigation />
+      <CommandPalette />
       
       <main className="relative z-10">
         <HeroSection />
