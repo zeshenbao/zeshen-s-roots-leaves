@@ -1,19 +1,10 @@
 /**
- * 2D Parallax Forest + Lake Scene (Extra-Clean, Recruiter-Professional)
+ * 2D Parallax Forest + Lake Scene (Clean, Recruiter-Professional)
  * 
- * Built entirely from inline SVG shapes/gradients - no external images.
- * Depth through value contrast and composition - NO fog/mist/haze.
- * 
- * LAYER STACK (back → front):
- *   A. SkyLayer - quiet gradient window
- *   B. SunOrMoonLayer - subtle sun (day) or moon with halo (night)
- *   C. DistantHillsLayer - low-profile gentle curves
- *   D. DistantTreelineLayer - simple pine silhouette
- *   E. LakeLayer - clean band with reflection
- *   F. MidTreesLayer - edge clusters only
- *   G. NightBonfireLayer - night only, localized glow
- *   H. ForegroundFrameTreesLayer - darkest, edge-only framing
- *   + UltraSubtleVignette - separate overlay (day: OFF or ≤0.03, night: ≤0.07)
+ * Built from inline SVG with ROUNDED tree silhouettes (no spikes).
+ * Grounded bonfire with firepit stones + logs + proper flame.
+ * Shaded moon with terminator + craters.
+ * Soft distant treeline silhouette.
  */
 
 import { useRef, useEffect, useState, useMemo } from 'react';
@@ -21,8 +12,6 @@ import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 import { useThemeStore, usePortfolioStore } from '@/lib/store';
 
 // ============ EXACT COLOR PALETTE ============
-// Minimal palette, crisp light mode - per spec
-
 const COLORS = {
   day: {
     skyTop: '#F6FAFF',
@@ -34,6 +23,7 @@ const COLORS = {
     lakeTop: '#DCEFE8',
     lakeBottom: '#C6DED6',
     sun: '#FFFBE8',
+    shore: '#C7D9CF',
   },
   night: {
     skyTop: '#081A2A',
@@ -45,44 +35,85 @@ const COLORS = {
     lakeTop: '#0B2630',
     lakeBottom: '#061A22',
     moon: '#E8F1FF',
-    moonHalo: '#E8F1FF',
+    stars: '#E8F1FF',
+    shore: '#071B22',
     bonfireCore: '#FFB15C',
     bonfireGlow: '#FFCF8A',
-    stars: '#E8F1FF',
+    bonfireInner: '#FFE4A8',
+    stone: '#2B2F33',
+    logDark: '#4A2F1F',
+    logLight: '#5B3A24',
   },
 };
 
-// ============ PARALLAX FACTORS (per spec) ============
+// ============ PARALLAX FACTORS ============
 const PARALLAX = {
   sky: { x: 0.02, y: 0.02 },
   sunMoon: { x: 0.03, y: 0.03 },
   hills: { x: 0.04, y: 0.03 },
   treeline: { x: 0.05, y: 0.04 },
   lake: { x: 0.06, y: 0.05 },
+  shore: { x: 0.07, y: 0.055 },
   midTrees: { x: 0.08, y: 0.06 },
   bonfire: { x: 0.10, y: 0.06 },
   foreground: { x: 0.12, y: 0.08 },
 };
 
-// Clamp values: x ∈ [-18..18], y ∈ [-10..10]
 const CLAMP = { x: 18, y: 10 };
-
-// ============ SVG VIEWBOX ============
 const VIEWBOX = "0 0 1000 600";
 
-// ============ STAR GENERATION ============
+// ============ STAR GENERATION (small dots, low opacity) ============
 function generateStars(count: number): { x: number; y: number; r: number; opacity: number }[] {
-  const seed = 42; // Deterministic
+  const seed = 42;
   const random = (i: number) => {
     const x = Math.sin(seed + i * 9973) * 10000;
     return x - Math.floor(x);
   };
   return Array.from({ length: count }, (_, i) => ({
     x: random(i) * 1000,
-    y: random(i + 100) * 280, // Upper portion only
-    r: random(i + 200) * 1.5 + 0.5,
-    opacity: random(i + 300) * 0.4 + 0.2,
+    y: random(i + 100) * 220, // Only y < 220
+    r: random(i + 200) * 0.8 + 0.8, // r=0.8..1.6
+    opacity: random(i + 300) * 0.3 + 0.15, // 0.15..0.45
   }));
+}
+
+// ============ REUSABLE TREE COMPONENTS ============
+
+// Rounded Pine: trunk + 4 stacked ellipse canopy blobs
+interface TreeProps {
+  x: number;
+  y: number;
+  scale?: number;
+  color: string;
+}
+
+function RoundedPine({ x, y, scale = 1, color }: TreeProps) {
+  return (
+    <g transform={`translate(${x}, ${y}) scale(${scale})`}>
+      {/* Trunk */}
+      <rect x="-11" y="-30" width="22" height="140" rx="10" fill={color} />
+      {/* Canopy blobs - stacked ellipses decreasing upward */}
+      <ellipse cx="0" cy="-40" rx="45" ry="30" fill={color} />
+      <ellipse cx="0" cy="-70" rx="38" ry="28" fill={color} />
+      <ellipse cx="0" cy="-95" rx="30" ry="24" fill={color} />
+      <ellipse cx="0" cy="-115" rx="20" ry="18" fill={color} />
+    </g>
+  );
+}
+
+// Broadleaf Tree: thicker trunk + wider canopy blob
+function BroadleafTree({ x, y, scale = 1, color }: TreeProps) {
+  return (
+    <g transform={`translate(${x}, ${y}) scale(${scale})`}>
+      {/* Trunk - thicker */}
+      <rect x="-14" y="-25" width="28" height="120" rx="12" fill={color} />
+      {/* Canopy - overlapping ellipses forming a blob */}
+      <ellipse cx="0" cy="-50" rx="70" ry="50" fill={color} />
+      <ellipse cx="-25" cy="-35" rx="45" ry="38" fill={color} />
+      <ellipse cx="25" cy="-35" rx="45" ry="38" fill={color} />
+      <ellipse cx="0" cy="-85" rx="45" ry="35" fill={color} />
+    </g>
+  );
 }
 
 // ============ LAYER PROPS ============
@@ -100,16 +131,12 @@ function SkyLayer({ offset, isNight, reducedMotion }: LayerProps) {
   const gradientId = isNight ? 'sky-gradient-night' : 'sky-gradient-day';
 
   return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-      style={{ transform: `translate(${tx}px, ${ty}px)` }}
-    >
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor={colors.skyTop} />
-          <stop offset="50%" stopColor={isNight ? colors.skyHorizon : colors.skyHorizon} />
+          <stop offset="60%" stopColor={colors.skyHorizon} />
         </linearGradient>
       </defs>
       <rect x="0" y="0" width="1000" height="600" fill={`url(#${gradientId})`} />
@@ -117,54 +144,74 @@ function SkyLayer({ offset, isNight, reducedMotion }: LayerProps) {
   );
 }
 
-// ============ LAYER B: SUN OR MOON ============
-function SunOrMoonLayer({ offset, isNight, reducedMotion }: LayerProps) {
+// ============ LAYER B: MOON + STARS (night only) ============
+function MoonAndStarsLayer({ offset, isNight, reducedMotion }: LayerProps) {
   const tx = reducedMotion ? 0 : offset.x * PARALLAX.sunMoon.x;
   const ty = reducedMotion ? 0 : offset.y * PARALLAX.sunMoon.y;
+  const stars = useMemo(() => generateStars(28), []);
 
-  if (isNight) {
-    // Moon at x=820, y=120, r=34 with halo opacity ≤0.12
+  if (!isNight) {
+    // Day: subtle sun disk
     return (
-      <svg
-        className="absolute inset-0 w-full h-full"
-        viewBox={VIEWBOX}
-        preserveAspectRatio="xMidYMid slice"
-        style={{ transform: `translate(${tx}px, ${ty}px)` }}
-      >
+      <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+        style={{ transform: `translate(${tx}px, ${ty}px)` }}>
         <defs>
-          <radialGradient id="moon-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={COLORS.night.moonHalo} stopOpacity="0.12" />
-            <stop offset="100%" stopColor={COLORS.night.moonHalo} stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="moon-surface" cx="35%" cy="35%" r="60%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="100%" stopColor={COLORS.night.moon} />
+          <radialGradient id="sun-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={COLORS.day.sun} stopOpacity="0.12" />
+            <stop offset="100%" stopColor={COLORS.day.sun} stopOpacity="0" />
           </radialGradient>
         </defs>
-        {/* Moon halo */}
-        <circle cx="820" cy="120" r="70" fill="url(#moon-glow)" />
-        {/* Moon disk */}
-        <circle cx="820" cy="120" r="34" fill="url(#moon-surface)" />
+        <circle cx="820" cy="110" r="55" fill="url(#sun-glow)" />
+        <circle cx="820" cy="110" r="30" fill={COLORS.day.sun} opacity="0.08" />
       </svg>
     );
   }
 
-  // Day: subtle sun disk at x=820, y=110, r=38, opacity 0.10
+  // Night: moon with terminator + craters + stars
   return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-      style={{ transform: `translate(${tx}px, ${ty}px)` }}
-    >
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
       <defs>
-        <radialGradient id="sun-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={COLORS.day.sun} stopOpacity="0.10" />
-          <stop offset="100%" stopColor={COLORS.day.sun} stopOpacity="0" />
+        {/* Moon surface gradient - slightly offset center for shading */}
+        <radialGradient id="moon-surface" cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="50%" stopColor="#F0F6FF" />
+          <stop offset="100%" stopColor={COLORS.night.moon} />
+        </radialGradient>
+        {/* Moon halo */}
+        <radialGradient id="moon-halo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={COLORS.night.moon} stopOpacity="0.10" />
+          <stop offset="100%" stopColor={COLORS.night.moon} stopOpacity="0" />
         </radialGradient>
       </defs>
-      <circle cx="820" cy="110" r="60" fill="url(#sun-glow)" />
-      <circle cx="820" cy="110" r="38" fill={COLORS.day.sun} opacity="0.10" />
+      
+      {/* Stars - small varied dots */}
+      {stars.map((star, i) => (
+        reducedMotion ? (
+          <circle key={i} cx={star.x} cy={star.y} r={star.r} fill={COLORS.night.stars} opacity={star.opacity} />
+        ) : (
+          <motion.circle key={i} cx={star.x} cy={star.y} r={star.r} fill={COLORS.night.stars}
+            initial={{ opacity: star.opacity * 0.7 }}
+            animate={{ opacity: [star.opacity * 0.7, star.opacity, star.opacity * 0.7] }}
+            transition={{ duration: 2.5 + (i % 3), repeat: Infinity, ease: 'easeInOut' }}
+          />
+        )
+      ))}
+      
+      {/* Moon halo */}
+      <circle cx="820" cy="120" r="65" fill="url(#moon-halo)" />
+      
+      {/* Moon base disc */}
+      <circle cx="820" cy="120" r="32" fill="url(#moon-surface)" />
+      
+      {/* Terminator shadow overlay - offset +6px in x */}
+      <circle cx="826" cy="120" r="32" fill="#0A1520" opacity="0.12" />
+      
+      {/* Subtle craters - very faint */}
+      <circle cx="812" cy="112" r="5" fill="#C0D0E0" opacity="0.07" />
+      <circle cx="828" cy="126" r="4" fill="#C0D0E0" opacity="0.06" />
+      <circle cx="815" cy="130" r="3" fill="#C0D0E0" opacity="0.08" />
+      <circle cx="832" cy="110" r="2.5" fill="#C0D0E0" opacity="0.06" />
     </svg>
   );
 }
@@ -175,46 +222,39 @@ function DistantHillsLayer({ offset, isNight, reducedMotion }: LayerProps) {
   const tx = reducedMotion ? 0 : offset.x * PARALLAX.hills.x;
   const ty = reducedMotion ? 0 : offset.y * PARALLAX.hills.y;
 
-  // Low profile gentle curves: M0,290 C... as per spec
-  const hillPath = "M0,290 C150,250 260,310 380,280 C520,240 620,320 760,285 C860,255 930,300 1000,275 L1000,600 L0,600 Z";
+  // Low profile gentle curves
+  const hillPath = "M0,295 C150,260 260,310 380,280 C520,245 620,315 760,285 C860,255 930,300 1000,275 L1000,600 L0,600 Z";
 
   return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-      style={{ transform: `translate(${tx}px, ${ty}px)` }}
-    >
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
       <path d={hillPath} fill={colors.hills} />
     </svg>
   );
 }
 
-// ============ LAYER D: DISTANT TREELINE ============
+// ============ LAYER D: DISTANT TREELINE (soft wavy silhouette) ============
 function DistantTreelineLayer({ offset, isNight, reducedMotion }: LayerProps) {
   const colors = isNight ? COLORS.night : COLORS.day;
   const tx = reducedMotion ? 0 : offset.x * PARALLAX.treeline.x;
   const ty = reducedMotion ? 0 : offset.y * PARALLAX.treeline.y;
 
-  // Simple repeating "tooth" pine silhouette along y≈285, height 30-45px
-  // Lower/subtler in center to maintain quiet window
-  const treelinePath = `
-    M0,310 
-    L0,290 L25,270 L50,290 L75,262 L100,290 L125,268 L150,290 
-    L175,272 L200,290 L225,278 L250,290 
-    L300,288 L350,292 L400,290 L450,292 L500,290 L550,292 L600,290 L650,292 L700,290 
-    L750,288 L775,278 L800,290 L825,272 L850,290 L875,268 L900,290 
-    L925,262 L950,290 L975,270 L1000,290 L1000,310 Z
-  `;
+  // Soft wavy silhouette path (no spiky teeth)
+  const treelinePath = "M0,300 C120,280 220,310 340,295 C470,270 560,320 700,292 C820,275 910,310 1000,290 L1000,340 L0,340 Z";
 
   return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-      style={{ transform: `translate(${tx}px, ${ty}px)` }}
-    >
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
       <path d={treelinePath} fill={colors.treeline} />
+      {/* Small rounded tree bumps on top */}
+      <ellipse cx="80" cy="285" rx="18" ry="14" fill={colors.treeline} />
+      <ellipse cx="150" cy="290" rx="22" ry="16" fill={colors.treeline} />
+      <ellipse cx="220" cy="295" rx="20" ry="14" fill={colors.treeline} />
+      <ellipse cx="380" cy="285" rx="18" ry="12" fill={colors.treeline} />
+      <ellipse cx="560" cy="295" rx="24" ry="16" fill={colors.treeline} />
+      <ellipse cx="700" cy="282" rx="20" ry="14" fill={colors.treeline} />
+      <ellipse cx="820" cy="280" rx="22" ry="15" fill={colors.treeline} />
+      <ellipse cx="920" cy="290" rx="18" ry="13" fill={colors.treeline} />
     </svg>
   );
 }
@@ -227,232 +267,219 @@ function LakeLayer({ offset, isNight, reducedMotion }: LayerProps) {
   const gradientId = isNight ? 'lake-gradient-night' : 'lake-gradient-day';
 
   return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-      style={{ transform: `translate(${tx}px, ${ty}px)` }}
-    >
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor={colors.lakeTop} />
           <stop offset="100%" stopColor={colors.lakeBottom} />
         </linearGradient>
-        {/* Day reflection band */}
         {!isNight && (
           <linearGradient id="lake-reflection-day" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.12" />
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.10" />
             <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
           </linearGradient>
         )}
-        {/* Night moon reflection */}
         {isNight && (
           <linearGradient id="moon-reflection" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={COLORS.night.moon} stopOpacity="0.20" />
-            <stop offset="50%" stopColor={COLORS.night.moon} stopOpacity="0.10" />
+            <stop offset="0%" stopColor={COLORS.night.moon} stopOpacity="0.18" />
+            <stop offset="50%" stopColor={COLORS.night.moon} stopOpacity="0.08" />
             <stop offset="100%" stopColor={COLORS.night.moon} stopOpacity="0" />
           </linearGradient>
         )}
       </defs>
       {/* Lake body: y=[310..520] */}
       <rect x="0" y="310" width="1000" height="210" fill={`url(#${gradientId})`} />
-      {/* Shoreline highlight at y≈315 */}
-      <line x1="50" y1="315" x2="950" y2="315" stroke={colors.lakeTop} strokeWidth="1.5" opacity="0.4" />
-      {/* Day reflection band y=[310..350] */}
-      {!isNight && (
-        <rect x="0" y="310" width="1000" height="40" fill="url(#lake-reflection-day)" />
-      )}
-      {/* Night moon reflection streak centered at x≈820, width ~110 */}
-      {isNight && (
-        <rect x="765" y="310" width="110" height="210" fill="url(#moon-reflection)" />
-      )}
+      {/* Shoreline highlight */}
+      <line x1="30" y1="312" x2="970" y2="312" stroke={colors.lakeTop} strokeWidth="1" opacity="0.35" />
+      {/* Day reflection band */}
+      {!isNight && <rect x="0" y="310" width="1000" height="35" fill="url(#lake-reflection-day)" />}
+      {/* Night moon reflection streak */}
+      {isNight && <rect x="765" y="310" width="110" height="210" fill="url(#moon-reflection)" />}
     </svg>
   );
 }
 
-// ============ LAYER F: MID TREES ============
+// ============ LAYER F: SHORE/GROUND PLANE ============
+function ShoreLayer({ offset, isNight, reducedMotion }: LayerProps) {
+  const colors = isNight ? COLORS.night : COLORS.day;
+  const tx = reducedMotion ? 0 : offset.x * PARALLAX.shore.x;
+  const ty = reducedMotion ? 0 : offset.y * PARALLAX.shore.y;
+
+  // Ground plane path y=430..600
+  const shorePath = "M0,430 C200,410 380,450 520,430 C700,400 860,460 1000,440 L1000,600 L0,600 Z";
+
+  return (
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
+      <path d={shorePath} fill={colors.shore} />
+      {/* Thin shoreline highlight */}
+      <path d="M0,430 C200,410 380,450 520,430 C700,400 860,460 1000,440" 
+        fill="none" stroke={isNight ? '#1A4050' : '#E8F4EE'} strokeWidth="2" opacity={isNight ? 0.08 : 0.10} />
+    </svg>
+  );
+}
+
+// ============ LAYER G: MID TREES (rounded silhouettes) ============
 function MidTreesLayer({ offset, isNight, reducedMotion }: LayerProps) {
   const colors = isNight ? COLORS.night : COLORS.day;
   const tx = reducedMotion ? 0 : offset.x * PARALLAX.midTrees.x;
   const ty = reducedMotion ? 0 : offset.y * PARALLAX.midTrees.y;
 
-  // Left cluster: x=[80..320], height 120-160px - strictly edge
-  const leftCluster = `
-    M0,520 L0,380 L30,360 L60,380 L90,340 L120,380 
-    L150,320 L180,380 L210,350 L240,380 L270,330 L300,380 
-    L320,360 L320,520 Z
-  `;
-  
-  // Right cluster: x=[680..920] - strictly edge
-  const rightCluster = `
-    M680,520 L680,380 L710,360 L740,330 L770,380 
-    L800,340 L830,380 L860,320 L890,380 L920,350 L950,380 
-    L980,340 L1000,380 L1000,520 Z
-  `;
-
   return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-      style={{ transform: `translate(${tx}px, ${ty}px)` }}
-    >
-      <path d={leftCluster} fill={colors.midTrees} />
-      <path d={rightCluster} fill={colors.midTrees} />
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
+      {/* Left cluster: x=[60..320] */}
+      <RoundedPine x={90} y={480} scale={0.9} color={colors.midTrees} />
+      <BroadleafTree x={170} y={490} scale={0.85} color={colors.midTrees} />
+      <RoundedPine x={240} y={475} scale={0.95} color={colors.midTrees} />
+      <BroadleafTree x={310} y={495} scale={0.8} color={colors.midTrees} />
+      
+      {/* Right cluster: x=[680..940] */}
+      <BroadleafTree x={700} y={485} scale={0.85} color={colors.midTrees} />
+      <RoundedPine x={780} y={480} scale={0.9} color={colors.midTrees} />
+      <RoundedPine x={860} y={470} scale={1.0} color={colors.midTrees} />
+      <BroadleafTree x={940} y={490} scale={0.8} color={colors.midTrees} />
     </svg>
   );
 }
 
-// ============ LAYER G: NIGHT BONFIRE ============
-function NightBonfireLayer({ offset, isNight, reducedMotion }: LayerProps) {
+// ============ LAYER H: BONFIRE (night only, grounded) ============
+function BonfireLayer({ offset, isNight, reducedMotion }: LayerProps) {
   const tx = reducedMotion ? 0 : offset.x * PARALLAX.bonfire.x;
   const ty = reducedMotion ? 0 : offset.y * PARALLAX.bonfire.y;
 
-  // Only show at night
   if (!isNight) return null;
 
-  // Bonfire at x=720, y=440
-  // Fire core ~24px high, glow r=90 opacity ≤0.18
-  // Embers: 4-6 tiny circles (only if not reduced motion)
+  // Firepit stones positions (ring radius ~32)
+  const stones = [
+    { x: 0, y: 28, r: 10 },
+    { x: 22, y: 20, r: 9 },
+    { x: 30, y: 0, r: 11 },
+    { x: 22, y: -18, r: 8 },
+    { x: 0, y: -26, r: 10 },
+    { x: -22, y: -18, r: 9 },
+    { x: -30, y: 0, r: 11 },
+    { x: -22, y: 20, r: 8 },
+  ];
+
+  // Embers
   const embers = useMemo(() => [
-    { id: 0, x: 715, delay: 0 },
-    { id: 1, x: 720, delay: 0.3 },
-    { id: 2, x: 725, delay: 0.6 },
-    { id: 3, x: 718, delay: 0.9 },
-    { id: 4, x: 723, delay: 1.2 },
-    { id: 5, x: 728, delay: 1.5 },
+    { id: 0, xOffset: -5, delay: 0 },
+    { id: 1, xOffset: 0, delay: 0.4 },
+    { id: 2, xOffset: 5, delay: 0.8 },
+    { id: 3, xOffset: -3, delay: 1.2 },
   ], []);
 
   return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-      style={{ transform: `translate(${tx}px, ${ty}px)` }}
-    >
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
       <defs>
+        {/* Localized glow - r=110, opacity ≤0.16 */}
         <radialGradient id="bonfire-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={COLORS.night.bonfireGlow} stopOpacity="0.18" />
-          <stop offset="60%" stopColor={COLORS.night.bonfireGlow} stopOpacity="0.08" />
+          <stop offset="0%" stopColor={COLORS.night.bonfireGlow} stopOpacity="0.16" />
+          <stop offset="50%" stopColor={COLORS.night.bonfireGlow} stopOpacity="0.06" />
           <stop offset="100%" stopColor={COLORS.night.bonfireGlow} stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="fire-core" cx="50%" cy="80%" r="50%">
-          <stop offset="0%" stopColor="#FFF4E0" />
-          <stop offset="40%" stopColor={COLORS.night.bonfireCore} />
-          <stop offset="100%" stopColor="#CC6600" />
-        </radialGradient>
+        {/* Flame gradients */}
+        <linearGradient id="flame-outer" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor="#CC4400" />
+          <stop offset="50%" stopColor={COLORS.night.bonfireCore} />
+          <stop offset="100%" stopColor="#FFCC66" />
+        </linearGradient>
+        <linearGradient id="flame-inner" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stopColor={COLORS.night.bonfireCore} />
+          <stop offset="60%" stopColor={COLORS.night.bonfireInner} />
+          <stop offset="100%" stopColor="#FFFEF0" />
+        </linearGradient>
       </defs>
-      {/* Local glow - r=90, localized */}
-      <circle cx="720" cy="440" r="90" fill="url(#bonfire-glow)" />
-      {/* Fire core - small flame shape */}
-      <ellipse cx="720" cy="432" rx="10" ry="16" fill="url(#fire-core)" />
-      {/* Embers - only if not reduced motion */}
-      {!reducedMotion && embers.map((ember) => (
-        <motion.circle
-          key={ember.id}
-          cx={ember.x}
-          r="2"
-          fill={COLORS.night.bonfireCore}
-          initial={{ cy: 430, opacity: 0.8 }}
-          animate={{ cy: [430, 400, 370], opacity: [0.8, 0.4, 0] }}
-          transition={{
-            duration: 2,
-            delay: ember.delay,
-            repeat: Infinity,
-            ease: 'easeOut',
-          }}
-        />
-      ))}
+      
+      <g transform="translate(720, 455)">
+        {/* Local glow */}
+        <circle cx="0" cy="-10" r="110" fill="url(#bonfire-glow)" />
+        
+        {/* Firepit stones */}
+        {stones.map((stone, i) => (
+          <circle key={i} cx={stone.x} cy={stone.y} r={stone.r} fill={COLORS.night.stone} />
+        ))}
+        
+        {/* Log 1 - rotated */}
+        <g transform="rotate(-15)">
+          <rect x="-45" y="-8" width="90" height="16" rx="8" fill={COLORS.night.logLight} />
+          <rect x="-42" y="-7" width="84" height="3" rx="1.5" fill="#7A5A3A" opacity="0.12" />
+        </g>
+        
+        {/* Log 2 - rotated opposite */}
+        <g transform="rotate(20)">
+          <rect x="-41" y="-7" width="82" height="14" rx="7" fill={COLORS.night.logDark} />
+          <rect x="-38" y="-6" width="76" height="2.5" rx="1.2" fill="#6A4A3A" opacity="0.12" />
+        </g>
+        
+        {/* Outer flame - proper flame shape */}
+        <path d="M0,-50 C-20,-30 -18,-5 0,8 C18,-5 20,-30 0,-50 Z" fill="url(#flame-outer)" />
+        
+        {/* Inner flame */}
+        <path d="M0,-38 C-12,-24 -10,-6 0,4 C10,-6 12,-24 0,-38 Z" fill="url(#flame-inner)" />
+        
+        {/* Flame core highlight */}
+        <ellipse cx="0" cy="-15" rx="5" ry="12" fill="#FFF8E0" opacity="0.7" />
+        
+        {/* Embers - only if not reduced motion */}
+        {!reducedMotion && embers.map((ember) => (
+          <motion.circle
+            key={ember.id}
+            cx={ember.xOffset}
+            r={1.5 + ember.id * 0.2}
+            fill={COLORS.night.bonfireCore}
+            initial={{ cy: -20, opacity: 0.9 }}
+            animate={{ cy: [-20, -35, -55], opacity: [0.9, 0.5, 0] }}
+            transition={{
+              duration: 1.8,
+              delay: ember.delay,
+              repeat: Infinity,
+              ease: 'easeOut',
+            }}
+          />
+        ))}
+      </g>
     </svg>
   );
 }
 
-// ============ LAYER H: FOREGROUND FRAME TREES ============
+// ============ LAYER I: FOREGROUND FRAMING TREES (rounded) ============
 function ForegroundFrameTreesLayer({ offset, isNight, reducedMotion }: LayerProps) {
   const colors = isNight ? COLORS.night : COLORS.day;
   const tx = reducedMotion ? 0 : offset.x * PARALLAX.foreground.x;
   const ty = reducedMotion ? 0 : offset.y * PARALLAX.foreground.y;
 
-  // Left foreground: x=[0..220], y=[120..600] - strictly edge, center OPEN
-  const leftTrees = `
-    M0,600 L0,160 
-    L20,140 L40,180 L60,100 L80,180 L100,120 L120,180 
-    L140,90 L160,180 L180,130 L200,180 L220,150 L220,600 Z
-  `;
-
-  // Right foreground: x=[780..1000], y=[120..600] - strictly edge
-  const rightTrees = `
-    M780,600 L780,150 
-    L800,180 L820,130 L840,180 L860,90 L880,180 L900,120 
-    L920,180 L940,100 L960,180 L980,140 L1000,160 L1000,600 Z
-  `;
-
   return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-      style={{ transform: `translate(${tx}px, ${ty}px)` }}
-    >
-      <path d={leftTrees} fill={colors.foreground} />
-      <path d={rightTrees} fill={colors.foreground} />
+    <svg className="absolute inset-0 w-full h-full" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice"
+      style={{ transform: `translate(${tx}px, ${ty}px)` }}>
+      {/* Left edge: x=[0..220] */}
+      <RoundedPine x={40} y={550} scale={1.3} color={colors.foreground} />
+      <BroadleafTree x={130} y={560} scale={1.2} color={colors.foreground} />
+      <RoundedPine x={200} y={540} scale={1.4} color={colors.foreground} />
+      
+      {/* Right edge: x=[780..1000] */}
+      <RoundedPine x={820} y={545} scale={1.35} color={colors.foreground} />
+      <BroadleafTree x={900} y={555} scale={1.25} color={colors.foreground} />
+      <RoundedPine x={970} y={550} scale={1.3} color={colors.foreground} />
     </svg>
   );
 }
 
-// ============ STARS (NIGHT ONLY) ============
-function StarsLayer({ isNight, reducedMotion }: { isNight: boolean; reducedMotion: boolean }) {
-  const stars = useMemo(() => generateStars(30), []);
-
-  if (!isNight) return null;
-
-  return (
-    <svg
-      className="absolute inset-0 w-full h-full"
-      viewBox={VIEWBOX}
-      preserveAspectRatio="xMidYMid slice"
-    >
-      {stars.map((star, i) => (
-        reducedMotion ? (
-          <circle
-            key={i}
-            cx={star.x}
-            cy={star.y}
-            r={star.r}
-            fill={COLORS.night.stars}
-            opacity={star.opacity}
-          />
-        ) : (
-          <motion.circle
-            key={i}
-            cx={star.x}
-            cy={star.y}
-            r={star.r}
-            fill={COLORS.night.stars}
-            initial={{ opacity: star.opacity * 0.6 }}
-            animate={{ opacity: [star.opacity * 0.6, star.opacity, star.opacity * 0.6] }}
-            transition={{ duration: 3 + (i % 3), repeat: Infinity, ease: 'easeInOut' }}
-          />
-        )
-      ))}
-    </svg>
-  );
-}
-
-// ============ ULTRA SUBTLE VIGNETTE (separate overlay) ============
+// ============ ULTRA SUBTLE VIGNETTE ============
 function UltraSubtleVignette({ isNight }: { isNight: boolean }) {
-  // Day: OFF or opacity ≤0.03
-  // Night: opacity ≤0.07
-  const opacity = isNight ? 0.07 : 0.03;
+  // Day: OFF (opacity 0), Night: opacity ≤0.07
+  const opacity = isNight ? 0.06 : 0;
+
+  if (opacity === 0) return null;
 
   return (
     <div
       className="absolute inset-0 pointer-events-none"
       style={{
-        background: `radial-gradient(ellipse 100% 100% at 50% 50%,
-          transparent 50%,
-          rgba(0,0,0,${opacity}) 100%
-        )`,
+        background: `radial-gradient(ellipse 100% 100% at 50% 50%, transparent 55%, rgba(0,0,0,${opacity}) 100%)`,
       }}
     />
   );
@@ -471,7 +498,7 @@ export function ParallaxForestScene() {
   const currentRef = useRef({ x: 0, y: 0 });
   const rafRef = useRef<number>();
 
-  // Mouse parallax (clamped)
+  // Mouse parallax
   useEffect(() => {
     if (reducedMotion) return;
 
@@ -490,20 +517,20 @@ export function ParallaxForestScene() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [reducedMotion]);
 
-  // Scroll parallax (small addition)
+  // Scroll parallax
   useEffect(() => {
     if (reducedMotion) return;
 
     const handleScroll = () => {
-      const scrollY = Math.min(window.scrollY * 0.02, 5);
-      targetRef.current.y = Math.max(-CLAMP.y, Math.min(CLAMP.y, targetRef.current.y + scrollY));
+      const scrollY = Math.min(window.scrollY * 0.015, 4);
+      targetRef.current.y = Math.max(-CLAMP.y, Math.min(CLAMP.y, scrollY));
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [reducedMotion]);
 
-  // RAF-based smooth interpolation
+  // Smooth animation loop
   useEffect(() => {
     if (reducedMotion) {
       setOffset({ x: 0, y: 0 });
@@ -511,9 +538,9 @@ export function ParallaxForestScene() {
     }
 
     const animate = () => {
-      const ease = 0.04;
-      currentRef.current.x += (targetRef.current.x - currentRef.current.x) * ease;
-      currentRef.current.y += (targetRef.current.y - currentRef.current.y) * ease;
+      const lerp = 0.08;
+      currentRef.current.x += (targetRef.current.x - currentRef.current.x) * lerp;
+      currentRef.current.y += (targetRef.current.y - currentRef.current.y) * lerp;
       setOffset({ x: currentRef.current.x, y: currentRef.current.y });
       rafRef.current = requestAnimationFrame(animate);
     };
@@ -524,46 +551,48 @@ export function ParallaxForestScene() {
     };
   }, [reducedMotion]);
 
-  const layerProps: LayerProps = { offset, isNight, reducedMotion: !!reducedMotion };
+  const layerProps: LayerProps = { offset, isNight, reducedMotion };
 
   return (
-    <div
-      className="fixed inset-0 overflow-hidden pointer-events-none"
-      style={{ zIndex: 0 }}
-      aria-hidden="true"
-      role="presentation"
-    >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={isNight ? 'night' : 'day'}
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Layer A: Sky */}
-          <SkyLayer {...layerProps} />
-          {/* Stars (night only, behind moon) */}
-          <StarsLayer isNight={isNight} reducedMotion={!!reducedMotion} />
-          {/* Layer B: Sun or Moon */}
-          <SunOrMoonLayer {...layerProps} />
-          {/* Layer C: Distant Hills */}
-          <DistantHillsLayer {...layerProps} />
-          {/* Layer D: Distant Treeline */}
-          <DistantTreelineLayer {...layerProps} />
-          {/* Layer E: Lake */}
-          <LakeLayer {...layerProps} />
-          {/* Layer F: Mid Trees */}
-          <MidTreesLayer {...layerProps} />
-          {/* Layer G: Night Bonfire */}
-          <NightBonfireLayer {...layerProps} />
-          {/* Layer H: Foreground Frame Trees */}
-          <ForegroundFrameTreesLayer {...layerProps} />
-          {/* Ultra Subtle Vignette */}
-          <UltraSubtleVignette isNight={isNight} />
-        </motion.div>
-      </AnimatePresence>
-    </div>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={isNight ? 'night' : 'day'}
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Layer A: Sky */}
+        <SkyLayer {...layerProps} />
+        
+        {/* Layer B: Moon + Stars / Sun */}
+        <MoonAndStarsLayer {...layerProps} />
+        
+        {/* Layer C: Distant Hills */}
+        <DistantHillsLayer {...layerProps} />
+        
+        {/* Layer D: Distant Treeline */}
+        <DistantTreelineLayer {...layerProps} />
+        
+        {/* Layer E: Lake */}
+        <LakeLayer {...layerProps} />
+        
+        {/* Layer F: Shore/Ground Plane */}
+        <ShoreLayer {...layerProps} />
+        
+        {/* Layer G: Mid Trees */}
+        <MidTreesLayer {...layerProps} />
+        
+        {/* Layer H: Bonfire (night only) */}
+        <BonfireLayer {...layerProps} />
+        
+        {/* Layer I: Foreground Framing Trees */}
+        <ForegroundFrameTreesLayer {...layerProps} />
+        
+        {/* Layer J: Ultra Subtle Vignette */}
+        <UltraSubtleVignette isNight={isNight} />
+      </motion.div>
+    </AnimatePresence>
   );
 }
