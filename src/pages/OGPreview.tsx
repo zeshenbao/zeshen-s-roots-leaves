@@ -20,7 +20,7 @@ const OGPreview = () => {
         {/* Light OG Image */}
         <section className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded-full bg-amber-100 border border-amber-300" />
+            <div className="w-4 h-4 rounded-full bg-primary/20 border border-primary/40" />
             <h2 className="text-xl font-semibold text-foreground">OG Light</h2>
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
               /og/og-light.png
@@ -44,7 +44,7 @@ const OGPreview = () => {
         {/* Dark OG Image */}
         <section className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded-full bg-slate-700 border border-slate-500" />
+            <div className="w-4 h-4 rounded-full bg-muted border border-border" />
             <h2 className="text-xl font-semibold text-foreground">OG Dark</h2>
             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
               /og/og-dark.png

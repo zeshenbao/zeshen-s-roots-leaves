@@ -14,15 +14,29 @@
 - Created development plan with phases
 - Created Phase 1 detailed plan
 
+### 2026-01-04 - Phase 1 Complete
+
+**Completed:**
+- Created `src/lib/color-scan.test.ts` regression test
+- Identified all color violations in codebase
+
 **Discoveries:**
-- Project already has semantic tokens in `src/index.css`
-- `SkillEcosystemSection.tsx` has `NODE_COLORS` object that needs refactoring
-- `ParallaxForestScene.tsx` uses inline HSL for art - this is acceptable and will be allowlisted
+- `SkillEcosystemSection.tsx` has ~25+ HSL violations (Phase 3)
+- `AcademicsSection.tsx` had 8 Tailwind palette classes
+- `OGPreview.tsx` had 2 Tailwind palette classes
+- `CinematicBackground.tsx` has ~20 hex colors (unused, consider removal)
+
+### 2026-01-04 - Phase 2 Progress
+
+**Completed:**
+- ✅ Refactored `AcademicsSection.tsx` - replaced rainbow palette with semantic tokens
+- ✅ Refactored `OGPreview.tsx` - replaced palette classes with tokens
+- ✅ Verified no more Tailwind palette classes in `src/components/`
 
 **Decisions:**
 - Use TDD approach: write color scan test first
-- Allowlist: `src/index.css`, `tailwind.config.ts`, `ParallaxForestScene.tsx`
-- Phase 1 focuses on foundation before component refactoring
+- Allowlist: `src/index.css`, `tailwind.config.ts`, `ParallaxForestScene.tsx`, `ReadabilityOverlay.tsx`
+- Course theme badges now use `primary` tokens instead of rainbow colors
 
 **Blockers:**
 - None
