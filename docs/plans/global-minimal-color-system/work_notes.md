@@ -29,12 +29,14 @@
 
 ---
 
-## Violation Tracking
+## Violation Tracking (Phase 1 Scan Results)
 
-| File | Violation Type | Status |
-|------|---------------|--------|
-| `SkillEcosystemSection.tsx` | NODE_COLORS hard-coded HSL | Pending Phase 3 |
-| TBD | TBD | TBD |
+| File | Violation Type | Count | Status |
+|------|---------------|-------|--------|
+| `SkillEcosystemSection.tsx` | Hard-coded HSL colors (NODE_COLORS, gradients, strokes) | ~25+ | Pending Phase 3 |
+| `AcademicsSection.tsx` | Tailwind palette classes (bg-blue-*, text-purple-*, etc.) | 8 themes | Pending Phase 2 |
+| `CinematicBackground.tsx` | Hex colors throughout | ~20 | Consider removal (unused?) |
+| `OGPreview.tsx` | Tailwind palette class (bg-amber-100) | 1 | Pending Phase 2 |
 
 *This table will be populated after running the color scan test*
 
