@@ -1,6 +1,6 @@
+import { Suspense, lazy, useState, useEffect } from 'react';
 import { CinematicBackground } from '@/components/CinematicBackground';
 import { Navigation } from '@/components/Navigation';
-import { CommandPalette } from '@/components/CommandPalette';
 import { BackToTop } from '@/components/BackToTop';
 import { SkipLink } from '@/components/SkipLink';
 import { HeroSection } from '@/components/sections/HeroSection';
@@ -13,7 +13,31 @@ import { CVSection } from '@/components/sections/CVSection';
 import { ContactSection } from '@/components/sections/ContactSection';
 import { person } from '@/lib/content';
 
+// Lazy load heavy components to reduce initial bundle
+const CommandPalette = lazy(() => import('@/components/CommandPalette').then(m => ({ default: m.CommandPalette })));
+
+// Lightweight loading placeholder (no skeleton - just empty)
+function CommandPaletteLoader() {
+  return null; // Command palette is hidden by default anyway
+}
+
 const Index = () => {
+  // Defer WebGL background loading until after initial paint
+  const [showBackground, setShowBackground] = useState(false);
+
+  useEffect(() => {
+    // Wait for initial paint + a short delay before loading WebGL
+    const timeoutId = requestIdleCallback 
+      ? requestIdleCallback(() => setShowBackground(true), { timeout: 1000 })
+      : setTimeout(() => setShowBackground(true), 500);
+    
+    return () => {
+      if (typeof timeoutId === 'number') {
+        cancelIdleCallback ? cancelIdleCallback(timeoutId) : clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
   return (
     <>
       {/* SEO */}
@@ -23,9 +47,16 @@ const Index = () => {
       {/* Skip link for keyboard users */}
       <SkipLink targetId="main-content" />
       
-      <CinematicBackground />
+      {/* Deferred WebGL background - loads after initial content */}
+      {showBackground && <CinematicBackground />}
+      
       <Navigation />
-      <CommandPalette />
+      
+      {/* Lazy loaded command palette */}
+      <Suspense fallback={<CommandPaletteLoader />}>
+        <CommandPalette />
+      </Suspense>
+      
       <BackToTop />
       
       <main 
