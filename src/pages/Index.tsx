@@ -77,10 +77,16 @@ const Index = () => {
       </main>
       
       <footer 
-        className="relative z-10 py-8 px-6 border-t border-border/50 text-center text-sm text-muted-foreground"
+        className="relative z-10 py-8 px-6 border-t border-border/30 text-center"
         role="contentinfo"
       >
-        <p>© {new Date().getFullYear()} {person.name}. Built with care in Stockholm.</p>
+        <p className="text-sm text-muted-foreground">
+          © {new Date().getFullYear()} {person.name}. 
+          <span className="hidden sm:inline"> Built with care in Stockholm.</span>
+        </p>
+        <p className="text-xs text-muted-foreground/60 mt-2 hover:text-muted-foreground transition-colors">
+          Engineering Physics × AI/ML
+        </p>
       </footer>
     </>
   );

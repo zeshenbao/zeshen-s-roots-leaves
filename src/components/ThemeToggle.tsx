@@ -57,14 +57,14 @@ export function ThemeToggle() {
       onClick={cycleTheme}
       aria-label={getAriaLabel()}
       title={getTooltip()}
-      className="relative w-9 h-9 transition-colors duration-200"
+      className="relative w-9 h-9 transition-all duration-200 hover:bg-primary/10 group"
     >
       <span className="sr-only">{getAriaLabel()}</span>
-      <div className="transition-transform duration-200 ease-out">
+      <div className="transition-all duration-300 ease-out group-hover:scale-110 group-hover:rotate-12 group-active:scale-95">
         {getIcon()}
       </div>
       {themeMode === 'system' && (
-        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] text-muted-foreground font-medium">
+        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] text-muted-foreground font-medium opacity-70 group-hover:opacity-100 transition-opacity">
           auto
         </span>
       )}

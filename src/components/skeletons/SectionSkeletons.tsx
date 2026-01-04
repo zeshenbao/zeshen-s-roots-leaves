@@ -1,4 +1,17 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+
+// Skeleton base component with shimmer animation
+function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn(
+        "rounded-md bg-muted/50 skeleton-pulse",
+        className
+      )}
+      {...props}
+    />
+  );
+}
 
 export function SkillEcosystemSkeleton() {
   return (
