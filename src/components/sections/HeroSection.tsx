@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { person, education } from '@/lib/content';
 import { generateResumePDF } from '@/lib/generate-resume';
+import { useThemeStore } from '@/lib/store';
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const { resolvedTheme } = useThemeStore();
+  const isNight = resolvedTheme === 'night';
   
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -53,17 +56,25 @@ export function HeroSection() {
       className="relative min-h-screen flex items-center justify-center px-6 pt-20 overflow-hidden"
       aria-labelledby="hero-heading"
     >
-      {/* Background parallax layer */}
-      <motion.div 
-        className="absolute inset-0 -z-10"
+      {/* Hero content scrim for readability */}
+      <div 
+        className="absolute inset-0 pointer-events-none transition-all duration-500"
         style={{
-          y: useTransform(scrollYProgress, [0, 1], prefersReducedMotion ? [0, 0] : [0, 200]),
+          background: isNight 
+            ? `radial-gradient(ellipse 80% 60% at 50% 45%,
+                hsl(220 25% 8% / 0.65) 0%,
+                hsl(220 25% 8% / 0.4) 60%,
+                transparent 100%
+              )`
+            : `radial-gradient(ellipse 80% 60% at 50% 45%,
+                hsl(45 30% 98% / 0.7) 0%,
+                hsl(45 30% 98% / 0.4) 60%,
+                transparent 100%
+              )`,
         }}
-      >
-        <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent opacity-50" />
-      </motion.div>
+      />
       
-      <div className="container max-w-5xl mx-auto text-center">
+      <div className="container max-w-5xl mx-auto text-center relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

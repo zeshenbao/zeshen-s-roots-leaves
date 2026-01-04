@@ -1,5 +1,6 @@
 import { Suspense, lazy, useState, useEffect } from 'react';
-import { CinematicBackground } from '@/components/CinematicBackground';
+import { ParallaxForestScene } from '@/components/ParallaxForestScene';
+import { GlobalReadabilityOverlay } from '@/components/ReadabilityOverlay';
 import { Navigation } from '@/components/Navigation';
 import { BackToTop } from '@/components/BackToTop';
 import { SkipLink } from '@/components/SkipLink';
@@ -13,6 +14,7 @@ import { AcademicsSection } from '@/components/sections/AcademicsSection';
 import { CVSection } from '@/components/sections/CVSection';
 import { ContactSection } from '@/components/sections/ContactSection';
 import { person } from '@/lib/content';
+import { useThemeStore } from '@/lib/store';
 
 // Lazy load heavy components to reduce initial bundle
 const CommandPalette = lazy(() => import('@/components/CommandPalette').then(m => ({ default: m.CommandPalette })));
@@ -23,21 +25,8 @@ function CommandPaletteLoader() {
 }
 
 const Index = () => {
-  // Defer WebGL background loading until after initial paint
-  const [showBackground, setShowBackground] = useState(false);
-
-  useEffect(() => {
-    // Wait for initial paint + a short delay before loading WebGL
-    const timeoutId = requestIdleCallback 
-      ? requestIdleCallback(() => setShowBackground(true), { timeout: 1000 })
-      : setTimeout(() => setShowBackground(true), 500);
-    
-    return () => {
-      if (typeof timeoutId === 'number') {
-        cancelIdleCallback ? cancelIdleCallback(timeoutId) : clearTimeout(timeoutId);
-      }
-    };
-  }, []);
+  const { resolvedTheme } = useThemeStore();
+  const isNight = resolvedTheme === 'night';
 
   return (
     <>
@@ -47,8 +36,11 @@ const Index = () => {
       {/* Skip link for keyboard users */}
       <SkipLink targetId="main-content" />
       
-      {/* Deferred WebGL background - loads after initial content */}
-      {showBackground && <CinematicBackground />}
+      {/* 2D Parallax Forest Scene - lightweight */}
+      <ParallaxForestScene />
+      
+      {/* Global readability overlay for text contrast */}
+      <GlobalReadabilityOverlay />
       
       <Navigation />
       
@@ -79,6 +71,12 @@ const Index = () => {
       <footer 
         className="relative z-10 py-8 px-6 border-t border-border/30 text-center"
         role="contentinfo"
+        style={{
+          background: isNight 
+            ? 'hsl(220 25% 8% / 0.8)'
+            : 'hsl(45 30% 98% / 0.85)',
+          backdropFilter: 'blur(8px)',
+        }}
       >
         <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} {person.name}. 
