@@ -306,7 +306,12 @@ export function CourseDrawer({ isOpen, onClose, initialTheme = 'all', initialSea
                       </h3>
                       <div className="space-y-2">
                         {letterCourses.map((course) => (
-                          <Card key={course.id} variant="glass" className="hover:bg-card/60 transition-colors">
+                          <Card 
+                            key={course.id} 
+                            id={`course-${course.id}`}
+                            variant="glass" 
+                            className="hover:bg-card/60 transition-colors rounded-xl"
+                          >
                             <CardContent className="p-3 flex items-center justify-between gap-3">
                               <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <BookOpen className="w-4 h-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />

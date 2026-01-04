@@ -42,16 +42,17 @@ export function ExperienceSection() {
           <div className="timeline-line" />
           
           <div className="space-y-8">
-            {allExperiences.map((exp, index) => {
+                {allExperiences.map((exp, index) => {
               const Icon = categoryIcons[exp.category];
               return (
-                <motion.div
+                <motion.article
+                  id={`exp-${exp.id}`}
                   key={`${exp.title}-${exp.organization}`}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.05 }}
-                  className="relative pl-10"
+                  className="relative pl-10 rounded-xl"
                 >
                   <div className="absolute left-2.5 top-2 timeline-dot" />
                   
@@ -89,7 +90,7 @@ export function ExperienceSection() {
                       )}
                     </CardContent>
                   </Card>
-                </motion.div>
+                </motion.article>
               );
             })}
           </div>
