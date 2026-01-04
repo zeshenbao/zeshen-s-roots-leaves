@@ -33,6 +33,20 @@
 - ✅ Refactored `OGPreview.tsx` - replaced palette classes with tokens
 - ✅ Verified no more Tailwind palette classes in `src/components/`
 
+### 2026-01-04 - Phase 3 Complete
+
+**Completed:**
+- ✅ Removed `NODE_COLORS` object from SkillEcosystemSection
+- ✅ Created `NODE_STYLES` and `getNodeColor()` using CSS variables
+- ✅ Converted all SVG gradients to use `hsl(var(--token))` format
+- ✅ Converted all node strokes/text fills to semantic tokens
+- ✅ Legend now uses Tailwind token classes (`text-primary`, `text-secondary`)
+
+**Changes made:**
+- `NODE_COLORS` → `NODE_STYLES` using `hsl(var(--primary))`, `hsl(var(--secondary))`
+- Glow filters now use `hsl(var(--primary))` and `hsl(var(--secondary))`
+- All hard-coded HSL colors removed from SkillEcosystemSection
+
 **Decisions:**
 - Use TDD approach: write color scan test first
 - Allowlist: `src/index.css`, `tailwind.config.ts`, `ParallaxForestScene.tsx`, `ReadabilityOverlay.tsx`

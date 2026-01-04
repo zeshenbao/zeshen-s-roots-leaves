@@ -60,23 +60,26 @@ interface VisualLink {
   type: 'feeds' | 'produces';
 }
 
-// Color palette - minimal (green + amber)
-const NODE_COLORS = {
-  root: {
-    math: 'hsl(145 40% 35%)',
-    physics: 'hsl(155 35% 32%)',
-    ml: 'hsl(35 55% 42%)',
-    computing: 'hsl(145 32% 34%)',
-    'soft-skills': 'hsl(145 28% 36%)',
-  },
-  trunk: 'hsl(30 32% 26%)',
-  branch: 'hsl(35 38% 40%)',
-  leaf: {
-    project: 'hsl(145 45% 38%)',
-    experience: 'hsl(145 40% 36%)',
-    publication: 'hsl(160 35% 35%)',
-  },
-  fruit: 'hsl(35 65% 50%)',
+// Semantic token-based colors - using CSS variables
+// All node types use the same tokens for consistency
+// Node differentiation via shape/icon, not rainbow colors
+const NODE_STYLES = {
+  // All roots use primary token
+  root: 'hsl(var(--primary))',
+  // Trunk uses muted earth tone
+  trunk: 'hsl(var(--muted-foreground) / 0.6)',
+  // Branches use primary at lower opacity
+  branch: 'hsl(var(--primary) / 0.8)',
+  // Leaves use primary
+  leaf: 'hsl(var(--primary))',
+  // Fruits (featured) use secondary (amber accent)
+  fruit: 'hsl(var(--secondary))',
+};
+
+// Get node fill color - unified approach
+const getNodeColor = (type: 'root' | 'trunk' | 'branch' | 'leaf', isFruit?: boolean): string => {
+  if (isFruit) return NODE_STYLES.fruit;
+  return NODE_STYLES[type];
 };
 
 const STROKE_WIDTHS = {
@@ -158,7 +161,7 @@ export function SkillEcosystemSection() {
         x: xSpacing * (i + 1),
         y: soilY + 40,
         layer: 0,
-        color: NODE_COLORS.root[root.category] || NODE_COLORS.root.math,
+        color: getNodeColor('root'),
         data: root,
       });
     });
@@ -171,7 +174,7 @@ export function SkillEcosystemSection() {
       x: centerX,
       y: trunkTopY,
       layer: 1,
-      color: NODE_COLORS.trunk,
+      color: getNodeColor('trunk'),
       data: treeTrunk,
     });
 
@@ -189,7 +192,7 @@ export function SkillEcosystemSection() {
         x: centerX + Math.cos(angle) * radius,
         y: branchY + Math.sin(angle) * 30,
         layer: 2,
-        color: NODE_COLORS.branch,
+        color: getNodeColor('branch'),
         data: branch,
         branchIndex: i,
       });
@@ -221,9 +224,7 @@ export function SkillEcosystemSection() {
       const radiusBase = 90 + leafIndex * 35;
       const radius = radiusBase + Math.sin(globalIndex * 1.5) * 25;
 
-      const leafColor = leaf.isFruit 
-        ? NODE_COLORS.fruit 
-        : NODE_COLORS.leaf[leaf.evidenceType as keyof typeof NODE_COLORS.leaf] || NODE_COLORS.leaf.project;
+      const leafColor = getNodeColor('leaf', leaf.isFruit);
 
       allNodes.push({
         id: leaf.id,
@@ -604,22 +605,22 @@ export function SkillEcosystemSection() {
               </div>
             </div>
 
-            {/* Legend */}
+            {/* Legend - using semantic token classes */}
             <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-3 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm border border-border/30">
               <div className="flex items-center gap-1.5">
-                <CircleDot className="w-3.5 h-3.5" style={{ color: NODE_COLORS.root.math }} />
+                <CircleDot className="w-3.5 h-3.5 text-primary" />
                 <span className="font-medium">Roots</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <GitBranch className="w-3.5 h-3.5" style={{ color: NODE_COLORS.branch }} />
+                <GitBranch className="w-3.5 h-3.5 text-primary/80" />
                 <span className="font-medium">Branches</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Leaf className="w-3.5 h-3.5" style={{ color: NODE_COLORS.leaf.project }} />
+                <Leaf className="w-3.5 h-3.5 text-primary" />
                 <span className="font-medium">Leaves</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" style={{ color: NODE_COLORS.fruit }} />
+                <Sparkles className="w-3.5 h-3.5 text-secondary" />
                 <span className="font-medium">Top</span>
               </div>
             </div>
@@ -641,27 +642,29 @@ export function SkillEcosystemSection() {
               aria-label="Skill ecosystem tree visualization"
             >
               <defs>
+                {/* Gradients use muted earth tones - scene-specific art (allowlisted) */}
                 <linearGradient id="soil-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="hsl(30 30% 22%)" stopOpacity="0.6" />
-                  <stop offset="40%" stopColor="hsl(25 35% 18%)" stopOpacity="0.85" />
-                  <stop offset="100%" stopColor="hsl(20 40% 12%)" stopOpacity="0.95" />
+                  <stop offset="0%" stopColor="hsl(var(--muted))" stopOpacity="0.4" />
+                  <stop offset="40%" stopColor="hsl(var(--muted))" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="hsl(var(--muted))" stopOpacity="0.8" />
                 </linearGradient>
                 
                 <linearGradient id="trunk-gradient" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stopColor="hsl(25 40% 22%)" />
-                  <stop offset="50%" stopColor="hsl(30 35% 28%)" />
-                  <stop offset="100%" stopColor="hsl(35 30% 35%)" />
+                  <stop offset="0%" stopColor="hsl(var(--muted-foreground) / 0.5)" />
+                  <stop offset="50%" stopColor="hsl(var(--muted-foreground) / 0.4)" />
+                  <stop offset="100%" stopColor="hsl(var(--muted-foreground) / 0.3)" />
                 </linearGradient>
                 
                 <linearGradient id="branch-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="hsl(30 35% 32%)" />
-                  <stop offset="100%" stopColor="hsl(35 40% 40%)" />
+                  <stop offset="0%" stopColor="hsl(var(--primary) / 0.6)" />
+                  <stop offset="100%" stopColor="hsl(var(--primary) / 0.8)" />
                 </linearGradient>
 
-                <GlowFilter id="glow-primary" color="hsl(145 60% 55%)" />
-                <GlowFilter id="glow-fruit" color="hsl(38 80% 60%)" />
-                <GlowFilter id="glow-selection" color="hsl(45 90% 65%)" />
-                <GlowFilter id="glow-path" color="hsl(95 70% 55%)" />
+                {/* Glow filters using semantic tokens */}
+                <GlowFilter id="glow-primary" color="hsl(var(--primary))" />
+                <GlowFilter id="glow-fruit" color="hsl(var(--secondary))" />
+                <GlowFilter id="glow-selection" color="hsl(var(--secondary))" />
+                <GlowFilter id="glow-path" color="hsl(var(--primary))" />
                 
                 <filter id="leaf-shadow">
                   <feDropShadow dx="1" dy="2" stdDeviation="2" floodOpacity="0.25" />
@@ -671,7 +674,7 @@ export function SkillEcosystemSection() {
               <g ref={gRef} transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k})`}>
                 {/* Soil */}
                 <rect x="0" y={soilY} width={dimensions.width} height={dimensions.height - soilY} fill="url(#soil-gradient)" />
-                <line x1="0" y1={soilY} x2={dimensions.width} y2={soilY} stroke="hsl(30 25% 30%)" strokeWidth="3" strokeDasharray="12 6" opacity="0.5" />
+                <line x1="0" y1={soilY} x2={dimensions.width} y2={soilY} stroke="hsl(var(--border))" strokeWidth="3" strokeDasharray="12 6" opacity="0.5" />
 
                 {/* Root paths - only render if visible */}
                 <g className="roots">
@@ -710,7 +713,7 @@ export function SkillEcosystemSection() {
                   <motion.path
                     d={trunkGeometry.fillPath}
                     fill="url(#trunk-gradient)"
-                    stroke="hsl(25 30% 20%)"
+                    stroke="hsl(var(--border))"
                     strokeWidth={2}
                     opacity={isNodeVisible('trunk') ? 1 : 0.2}
                     filter={isFocusMode && isNodeVisible('trunk') ? 'url(#glow-path)' : undefined}
@@ -769,7 +772,7 @@ export function SkillEcosystemSection() {
                         key={`twig-${leafNode.id}`}
                         d={path}
                         fill="none"
-                        stroke="hsl(35 35% 45%)"
+                        stroke="hsl(var(--primary) / 0.5)"
                         strokeWidth={isHighlighted ? STROKE_WIDTHS.twig + 1 : STROKE_WIDTHS.twig}
                         strokeLinecap="round"
                         strokeOpacity={isHighlighted ? 0.9 : 0.3}
@@ -811,11 +814,11 @@ export function SkillEcosystemSection() {
                         <circle
                           r={isSelected ? 26 : 22}
                           fill={node.color}
-                          stroke={isSelected ? 'hsl(45 80% 65%)' : 'hsl(25 30% 15%)'}
+                          stroke={isSelected ? 'hsl(var(--secondary))' : 'hsl(var(--border))'}
                           strokeWidth={isSelected ? 3 : 2}
                           filter={isSelected ? 'url(#glow-selection)' : undefined}
                         />
-                        <text textAnchor="middle" dy="0.35em" fontSize={10} fill="hsl(45 20% 92%)" fontWeight={600} style={{ pointerEvents: 'none' }}>
+                        <text textAnchor="middle" dy="0.35em" fontSize={10} fill="hsl(var(--primary-foreground))" fontWeight={600} style={{ pointerEvents: 'none' }}>
                           {node.name.length > 10 ? node.name.slice(0, 9) + '…' : node.name}
                         </text>
                       </motion.g>
@@ -848,8 +851,8 @@ export function SkillEcosystemSection() {
                         aria-label={`Branch: ${node.name}`}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node); } }}
                       >
-                        <ellipse rx={36} ry={14} fill={node.color} stroke="hsl(30 25% 25%)" strokeWidth={1.5} />
-                        <text textAnchor="middle" dy="0.35em" fontSize={10} fill="hsl(45 15% 95%)" fontWeight={500} style={{ pointerEvents: 'none' }}>
+                        <ellipse rx={36} ry={14} fill={node.color} stroke="hsl(var(--border))" strokeWidth={1.5} />
+                        <text textAnchor="middle" dy="0.35em" fontSize={10} fill="hsl(var(--primary-foreground))" fontWeight={500} style={{ pointerEvents: 'none' }}>
                           {node.name.length > 14 ? node.name.slice(0, 13) + '…' : node.name}
                         </text>
                       </motion.g>
@@ -916,7 +919,7 @@ export function SkillEcosystemSection() {
                 {/* Glow animation */}
                 {animationPhase === 'glowing' && performanceTier !== 'low' && (
                   <motion.g initial={{ opacity: 0 }} animate={{ opacity: [0, 0.6, 0] }} transition={{ duration: 1.5, ease: 'easeInOut' }}>
-                    <motion.path d={trunkGeometry.fillPath} fill="none" stroke="hsl(95 60% 50%)" strokeWidth={4} filter="url(#glow-primary)" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.2 }} />
+                    <motion.path d={trunkGeometry.fillPath} fill="none" stroke="hsl(var(--primary))" strokeWidth={4} filter="url(#glow-primary)" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.2 }} />
                   </motion.g>
                 )}
               </g>
