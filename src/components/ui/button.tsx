@@ -5,22 +5,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft hover:shadow-elevated",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
+          "border border-border bg-transparent hover:bg-accent hover:text-accent-foreground hover:border-primary/30",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         // Hero variants for landing page
-        hero: "bg-primary text-primary-foreground font-semibold shadow-glow hover:shadow-[0_0_50px_hsl(145_50%_40%/0.4)] hover:-translate-y-0.5 transition-all duration-300",
-        heroOutline: "border-2 border-primary/50 text-foreground hover:border-primary hover:bg-primary/10 backdrop-blur-sm transition-all duration-300",
+        hero: "bg-primary text-primary-foreground font-semibold shadow-glow hover:shadow-[0_0_50px_hsl(145_50%_40%/0.4)] hover:-translate-y-0.5 hover:bg-primary/90 transition-all duration-300",
+        heroOutline: "border-2 border-primary/50 text-foreground hover:border-primary hover:bg-primary/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5",
         // Accent button
         accent: "bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold shadow-elevated hover:shadow-glow-accent hover:-translate-y-0.5 transition-all duration-300",
         // Subtle glass button

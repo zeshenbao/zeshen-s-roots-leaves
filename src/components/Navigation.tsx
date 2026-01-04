@@ -40,7 +40,7 @@ export function Navigation() {
       role="banner"
     >
       <nav className="container max-w-6xl mx-auto px-6 py-4 flex items-center justify-between" role="navigation">
-        <a href="#home" className="font-display text-xl font-medium text-foreground">
+        <a href="#home" className="font-display text-xl font-medium text-foreground hover:text-primary transition-colors duration-200">
           {person.name.split(' ')[0]}
         </a>
         
@@ -67,12 +67,12 @@ export function Navigation() {
           {/* Search button */}
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-sm"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200 text-sm hover:scale-[1.02] active:scale-[0.98]"
             aria-label="Search (Cmd+K)"
           >
             <Search className="w-4 h-4" />
             <span className="hidden lg:inline">Search</span>
-            <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-background/50 rounded text-xs">
+            <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-background/50 rounded text-xs border border-border/30">
               <Command className="w-3 h-3" />K
             </kbd>
           </button>

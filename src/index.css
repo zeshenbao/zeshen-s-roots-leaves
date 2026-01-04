@@ -468,7 +468,167 @@
 }
 
 @layer utilities {
-  /* Custom scrollbar */
+  /* ============ MICRO-INTERACTIONS ============ */
+  
+  /* Smooth icon rotation on hover */
+  .icon-spin-hover {
+    @apply transition-transform duration-300;
+  }
+  
+  .icon-spin-hover:hover {
+    @apply rotate-12;
+  }
+  
+  /* Subtle bounce on hover */
+  .bounce-hover {
+    @apply transition-transform duration-300;
+  }
+  
+  .bounce-hover:hover {
+    animation: subtle-bounce 0.4s ease-out;
+  }
+  
+  @keyframes subtle-bounce {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-4px); }
+    60% { transform: translateY(-2px); }
+  }
+  
+  /* Magnetic hover effect for buttons */
+  .magnetic-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+  
+  .magnetic-hover:hover {
+    @apply scale-[1.02];
+  }
+  
+  .magnetic-hover:active {
+    @apply scale-[0.98];
+  }
+  
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  /* Pulse glow for CTAs */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 35px hsl(var(--primary) / 0.5);
+    }
+  }
+  
+  /* Fade slide in from different directions */
+  .fade-slide-up {
+    animation: fade-slide-up 0.5s var(--ease-out-expo) forwards;
+  }
+  
+  @keyframes fade-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .fade-slide-down {
+    animation: fade-slide-down 0.5s var(--ease-out-expo) forwards;
+  }
+  
+  @keyframes fade-slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Staggered children animation */
+  .stagger-children > * {
+    opacity: 0;
+    animation: fade-slide-up 0.4s var(--ease-out-expo) forwards;
+  }
+  
+  .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+  .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+  
+  /* Card interaction states */
+  .card-interactive {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .card-interactive:hover {
+    @apply -translate-y-1;
+    box-shadow: var(--shadow-lg), 0 0 0 1px hsl(var(--border) / 0.5);
+  }
+  
+  .card-interactive:active {
+    @apply translate-y-0 scale-[0.99];
+    transition-duration: 100ms;
+  }
+  
+  /* Focus ring animation */
+  .focus-ring-animated:focus-visible {
+    @apply outline-none;
+    animation: focus-ring-pulse 0.3s ease-out forwards;
+  }
+  
+  @keyframes focus-ring-pulse {
+    0% {
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5);
+    }
+    100% {
+      box-shadow: 0 0 0 3px hsl(var(--primary) / 0.3);
+    }
+  }
+  
+  /* Smooth color transitions for theme switching */
+  .theme-transition,
+  .theme-transition * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease !important;
+  }
+  
+  /* Icon button hover glow */
+  .icon-button-glow {
+    @apply transition-all duration-200;
+  }
+  
+  .icon-button-glow:hover {
+    @apply text-primary;
+    text-shadow: 0 0 12px hsl(var(--primary) / 0.5);
+  }
+
+  /* ============ SCROLLBAR ============ */
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted)) transparent;
@@ -484,6 +644,11 @@
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply bg-muted rounded-full;
+    transition: background-color 0.2s;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
   }
 
   /* Hide scrollbar but keep functionality */
@@ -506,5 +671,20 @@
     opacity: 1;
     transform: translateY(0);
     transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+  }
+  
+  /* Loading skeleton pulse */
+  .skeleton-pulse {
+    @apply bg-muted rounded;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes skeleton-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
   }
 }
