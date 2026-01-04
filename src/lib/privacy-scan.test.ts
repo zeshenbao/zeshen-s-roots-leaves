@@ -1,10 +1,10 @@
 /**
- * Privacy Enforcement Tests
- * These tests fail if grades or sensitive identifiers are found
+ * Privacy & Security Enforcement Tests
+ * These tests fail if grades, sensitive identifiers, or unsafe external links are found
  */
 
 import { describe, it, expect } from 'vitest';
-import { scanContent } from './privacy-scan';
+import { scanContent, scanForUnsafeExternalLinks } from './privacy-scan';
 import { courses, person, education, experiences, projects, publications } from './content';
 
 describe('Privacy Enforcement', () => {
@@ -124,6 +124,45 @@ describe('Privacy Enforcement', () => {
           expect(allowedFields).toContain(key);
         }
       }
+    });
+  });
+
+  describe('External Link Security', () => {
+    it('should detect target="_blank" without rel="noopener noreferrer"', () => {
+      const unsafeLink = '<a href="https://example.com" target="_blank">Link</a>';
+      const result = scanForUnsafeExternalLinks(unsafeLink);
+      expect(result.isClean).toBe(false);
+      expect(result.violations[0].type).toBe('unsafe-external-link');
+    });
+
+    it('should detect target="_blank" with only noopener', () => {
+      const partiallySecure = '<a href="https://example.com" target="_blank" rel="noopener">Link</a>';
+      const result = scanForUnsafeExternalLinks(partiallySecure);
+      expect(result.isClean).toBe(false);
+    });
+
+    it('should detect target="_blank" with only noreferrer', () => {
+      const partiallySecure = '<a href="https://example.com" target="_blank" rel="noreferrer">Link</a>';
+      const result = scanForUnsafeExternalLinks(partiallySecure);
+      expect(result.isClean).toBe(false);
+    });
+
+    it('should allow target="_blank" with rel="noopener noreferrer"', () => {
+      const safeLink = '<a href="https://example.com" target="_blank" rel="noopener noreferrer">Link</a>';
+      const result = scanForUnsafeExternalLinks(safeLink);
+      expect(result.isClean).toBe(true);
+    });
+
+    it('should allow internal links without rel attribute', () => {
+      const internalLink = '<a href="#projects">View Projects</a>';
+      const result = scanForUnsafeExternalLinks(internalLink);
+      expect(result.isClean).toBe(true);
+    });
+
+    it('should allow mailto links without rel attribute', () => {
+      const mailtoLink = '<a href="mailto:test@example.com">Email</a>';
+      const result = scanForUnsafeExternalLinks(mailtoLink);
+      expect(result.isClean).toBe(true);
     });
   });
 });
