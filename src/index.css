@@ -688,3 +688,73 @@
     }
   }
 }
+
+/* ============================================
+   ECOSYSTEM HIGHLIGHT RING
+   Temporary glow effect for deep-linked items
+   ============================================ */
+
+.ecosystem-highlight-ring {
+  animation: ecosystem-highlight 1.5s ease-out forwards;
+  position: relative;
+}
+
+.ecosystem-highlight-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid hsl(var(--primary));
+  box-shadow: 
+    0 0 20px hsl(var(--primary) / 0.4),
+    0 0 40px hsl(var(--primary) / 0.2),
+    inset 0 0 20px hsl(var(--primary) / 0.1);
+  animation: ecosystem-glow-ring 1.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes ecosystem-highlight {
+  0% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(1.01);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ecosystem-glow-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+/* Reduced motion: simpler highlight */
+@media (prefers-reduced-motion: reduce) {
+  .ecosystem-highlight-ring {
+    animation: none;
+  }
+  .ecosystem-highlight-ring::before {
+    animation: ecosystem-glow-simple 1.5s ease-out forwards;
+  }
+  @keyframes ecosystem-glow-simple {
+    0%, 15% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}
