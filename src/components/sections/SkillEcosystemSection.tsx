@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import * as d3 from 'd3-force';
+import { useInView } from 'react-intersection-observer';
 import { 
   treeRoots, treeTrunk, treeBranches, treeLeaves, treeEdges,
   getLeavesByBranch, getBranchesByRoot, getRootsForBranch, getLeafEvidence, getFruitLeaves,
@@ -81,8 +82,26 @@ export function SkillEcosystemSection() {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'growing' | 'blooming' | 'glowing' | 'complete'>('idle');
   const [showFruitsOnly, setShowFruitsOnly] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const prefersReducedMotion = useReducedMotion();
+  
+  // Lazy loading - only initialize when section is in view
+  const { ref: inViewRef, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+  });
+  
+  // Initialize heavy simulation only when in view
+  useEffect(() => {
+    if (inView && !isInitialized) {
+      // Small delay to ensure smooth scrolling
+      const timeoutId = setTimeout(() => {
+        setIsInitialized(true);
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [inView, isInitialized]);
   
   const { 
     selectedRoot, 
@@ -401,6 +420,7 @@ export function SkillEcosystemSection() {
   return (
     <section 
       id="ecosystem" 
+      ref={inViewRef}
       className="relative py-24 px-6 min-h-screen bg-muted/10"
       aria-labelledby="ecosystem-heading"
     >
@@ -420,12 +440,23 @@ export function SkillEcosystemSection() {
           </p>
         </div>
 
-        {/* Main Tree Visualization */}
-        <div 
-          ref={containerRef}
-          className="relative w-full h-[600px] md:h-[700px] glass-card rounded-2xl overflow-hidden"
-          style={{ border: '1px solid hsl(var(--border) / 0.3)' }}
-        >
+        {/* Loading state before initialization */}
+        {!isInitialized && (
+          <div className="relative w-full h-[600px] md:h-[700px] glass-card rounded-2xl overflow-hidden flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Loading skill tree...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Main Tree Visualization - only render when initialized */}
+        {isInitialized && (
+          <div 
+            ref={containerRef}
+            className="relative w-full h-[600px] md:h-[700px] glass-card rounded-2xl overflow-hidden"
+            style={{ border: '1px solid hsl(var(--border) / 0.3)' }}
+          >
           {/* Controls (top-right) */}
           <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-background/70 backdrop-blur-sm rounded-lg p-2">
             <Button
@@ -887,6 +918,7 @@ export function SkillEcosystemSection() {
             )}
           </AnimatePresence>
         </div>
+        )}
 
         {/* Side Panel */}
         <AnimatePresence>
