@@ -62,13 +62,13 @@ export function HeroSection() {
         style={{
           background: isNight 
             ? `radial-gradient(ellipse 80% 60% at 50% 45%,
-                hsl(220 25% 8% / 0.65) 0%,
-                hsl(220 25% 8% / 0.4) 60%,
+                hsl(220 18% 6% / 0.6) 0%,
+                hsl(220 18% 6% / 0.35) 60%,
                 transparent 100%
               )`
             : `radial-gradient(ellipse 80% 60% at 50% 45%,
-                hsl(45 30% 98% / 0.7) 0%,
-                hsl(45 30% 98% / 0.4) 60%,
+                hsl(40 25% 97% / 0.75) 0%,
+                hsl(40 25% 97% / 0.45) 60%,
                 transparent 100%
               )`,
         }}
