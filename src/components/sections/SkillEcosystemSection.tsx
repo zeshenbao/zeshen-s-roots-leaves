@@ -51,23 +51,23 @@ interface VisualLink {
   type: 'feeds' | 'produces';
 }
 
-// Color palette using semantic tokens
+// Color palette using semantic tokens - minimal palette (green + amber)
 const NODE_COLORS = {
   root: {
-    math: 'hsl(145 45% 35%)',
-    physics: 'hsl(160 40% 30%)',
-    ml: 'hsl(38 50% 40%)',
-    computing: 'hsl(200 40% 35%)',
-    'soft-skills': 'hsl(280 30% 40%)',
+    math: 'hsl(145 40% 35%)',
+    physics: 'hsl(155 35% 32%)',
+    ml: 'hsl(35 55% 42%)',
+    computing: 'hsl(145 32% 34%)',
+    'soft-skills': 'hsl(145 28% 36%)',
   },
-  trunk: 'hsl(30 35% 28%)',
-  branch: 'hsl(35 40% 45%)',
+  trunk: 'hsl(30 32% 26%)',
+  branch: 'hsl(35 38% 40%)',
   leaf: {
-    project: 'hsl(95 50% 42%)',
-    experience: 'hsl(145 45% 40%)',
-    publication: 'hsl(180 40% 38%)',
+    project: 'hsl(145 45% 38%)',
+    experience: 'hsl(145 40% 36%)',
+    publication: 'hsl(160 35% 35%)',
   },
-  fruit: 'hsl(38 70% 55%)',
+  fruit: 'hsl(35 65% 50%)',
 };
 
 // Stroke widths by hierarchy
