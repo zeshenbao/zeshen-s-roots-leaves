@@ -49,7 +49,6 @@ export interface Course {
   name: string;
   nameEn: string;
   credits: number;
-  grade: string;
   date: string;
   theme: CourseTheme;
 }
@@ -291,61 +290,61 @@ export const languages = {
 // ============ COURSES ============
 export const courses: Course[] = [
   // Mathematics
-  { name: "Introduktion i matematik", nameEn: "Introduction to Mathematics", credits: 1.5, grade: "P", date: "2019-08-23", theme: "mathematics" },
-  { name: "Analys i en variabel", nameEn: "Single Variable Calculus", credits: 7.5, grade: "D", date: "2020-01-14", theme: "mathematics" },
-  { name: "Linjär algebra", nameEn: "Linear Algebra", credits: 7.5, grade: "D", date: "2020-02-11", theme: "mathematics" },
-  { name: "Flervariabelanalys", nameEn: "Multivariable Calculus", credits: 7.5, grade: "D", date: "2020-06-03", theme: "mathematics" },
-  { name: "Sannolikhetsteori och statistik", nameEn: "Probability Theory and Statistics", credits: 6.0, grade: "A", date: "2020-08-10", theme: "mathematics" },
-  { name: "Vektoranalys", nameEn: "Vector Analysis", credits: 4.0, grade: "C", date: "2020-12-16", theme: "mathematics" },
-  { name: "Linjär algebra, fortsättningskurs", nameEn: "Advanced Linear Algebra", credits: 6.0, grade: "C", date: "2022-01-12", theme: "mathematics" },
-  { name: "Differentialekvationer och transformmetoder", nameEn: "Differential Equations and Transform Methods", credits: 9.0, grade: "C", date: "2022-01-14", theme: "mathematics" },
-  { name: "Fysikens matematiska metoder", nameEn: "Mathematical Methods in Physics", credits: 4.0, grade: "E", date: "2022-04-03", theme: "mathematics" },
+  { name: "Introduktion i matematik", nameEn: "Introduction to Mathematics", credits: 1.5, date: "2019-08-23", theme: "mathematics" },
+  { name: "Analys i en variabel", nameEn: "Single Variable Calculus", credits: 7.5, date: "2020-01-14", theme: "mathematics" },
+  { name: "Linjär algebra", nameEn: "Linear Algebra", credits: 7.5, date: "2020-02-11", theme: "mathematics" },
+  { name: "Flervariabelanalys", nameEn: "Multivariable Calculus", credits: 7.5, date: "2020-06-03", theme: "mathematics" },
+  { name: "Sannolikhetsteori och statistik", nameEn: "Probability Theory and Statistics", credits: 6.0, date: "2020-08-10", theme: "mathematics" },
+  { name: "Vektoranalys", nameEn: "Vector Analysis", credits: 4.0, date: "2020-12-16", theme: "mathematics" },
+  { name: "Linjär algebra, fortsättningskurs", nameEn: "Advanced Linear Algebra", credits: 6.0, date: "2022-01-12", theme: "mathematics" },
+  { name: "Differentialekvationer och transformmetoder", nameEn: "Differential Equations and Transform Methods", credits: 9.0, date: "2022-01-14", theme: "mathematics" },
+  { name: "Fysikens matematiska metoder", nameEn: "Mathematical Methods in Physics", credits: 4.0, date: "2022-04-03", theme: "mathematics" },
   
   // Physics
-  { name: "Termodynamik", nameEn: "Thermodynamics", credits: 6.0, grade: "D", date: "2019-12-03", theme: "physics" },
-  { name: "Klassisk fysik", nameEn: "Classical Physics", credits: 7.5, grade: "C", date: "2020-03-07", theme: "physics" },
-  { name: "Mekanik I", nameEn: "Mechanics I", credits: 9.0, grade: "C", date: "2020-08-17", theme: "physics" },
-  { name: "Mekanik, fortsättningskurs", nameEn: "Advanced Mechanics", credits: 6.0, grade: "D", date: "2020-11-08", theme: "physics" },
-  { name: "Experimentell fysik", nameEn: "Experimental Physics", credits: 4.0, grade: "P", date: "2021-01-03", theme: "physics" },
-  { name: "Modern fysik", nameEn: "Modern Physics", credits: 4.0, grade: "C", date: "2022-01-10", theme: "physics" },
-  { name: "Teoretisk fysik", nameEn: "Theoretical Physics", credits: 6.0, grade: "B", date: "2022-05-30", theme: "physics" },
-  { name: "Teoretisk elektroteknik", nameEn: "Theoretical Electrotechnics", credits: 9.0, grade: "C", date: "2023-01-09", theme: "physics" },
-  { name: "Tillämpad modern fysik", nameEn: "Applied Modern Physics", credits: 5.0, grade: "P", date: "2023-01-10", theme: "physics" },
-  { name: "Strömningsmekanik", nameEn: "Fluid Mechanics", credits: 4.0, grade: "D", date: "2023-01-30", theme: "physics" },
-  { name: "Analytisk mekanik och klassisk fältteori", nameEn: "Analytical Mechanics and Classical Field Theory", credits: 7.5, grade: "D", date: "2023-05-31", theme: "physics" },
-  { name: "Statistisk mekanik", nameEn: "Statistical Mechanics", credits: 7.5, grade: "C", date: "2023-10-19", theme: "physics" },
-  { name: "Kvantmekanik, fortsättningskurs", nameEn: "Advanced Quantum Mechanics", credits: 7.5, grade: "D", date: "2023-10-23", theme: "physics" },
-  { name: "Allmän relativitetsteori", nameEn: "General Relativity", credits: 6.0, grade: "E", date: "2024-01-10", theme: "physics" },
-  { name: "Speciell relativitetsteori", nameEn: "Special Relativity", credits: 6.0, grade: "D", date: "2024-01-15", theme: "physics" },
-  { name: "Relativistisk kvantfysik", nameEn: "Relativistic Quantum Physics", credits: 7.5, grade: "B", date: "2024-03-13", theme: "physics" },
-  { name: "Teoretisk partikelfysik", nameEn: "Theoretical Particle Physics", credits: 7.5, grade: "C", date: "2024-05-27", theme: "physics" },
-  { name: "Kvantfältteori", nameEn: "Quantum Field Theory", credits: 7.5, grade: "C", date: "2024-10-25", theme: "physics" },
+  { name: "Termodynamik", nameEn: "Thermodynamics", credits: 6.0, date: "2019-12-03", theme: "physics" },
+  { name: "Klassisk fysik", nameEn: "Classical Physics", credits: 7.5, date: "2020-03-07", theme: "physics" },
+  { name: "Mekanik I", nameEn: "Mechanics I", credits: 9.0, date: "2020-08-17", theme: "physics" },
+  { name: "Mekanik, fortsättningskurs", nameEn: "Advanced Mechanics", credits: 6.0, date: "2020-11-08", theme: "physics" },
+  { name: "Experimentell fysik", nameEn: "Experimental Physics", credits: 4.0, date: "2021-01-03", theme: "physics" },
+  { name: "Modern fysik", nameEn: "Modern Physics", credits: 4.0, date: "2022-01-10", theme: "physics" },
+  { name: "Teoretisk fysik", nameEn: "Theoretical Physics", credits: 6.0, date: "2022-05-30", theme: "physics" },
+  { name: "Teoretisk elektroteknik", nameEn: "Theoretical Electrotechnics", credits: 9.0, date: "2023-01-09", theme: "physics" },
+  { name: "Tillämpad modern fysik", nameEn: "Applied Modern Physics", credits: 5.0, date: "2023-01-10", theme: "physics" },
+  { name: "Strömningsmekanik", nameEn: "Fluid Mechanics", credits: 4.0, date: "2023-01-30", theme: "physics" },
+  { name: "Analytisk mekanik och klassisk fältteori", nameEn: "Analytical Mechanics and Classical Field Theory", credits: 7.5, date: "2023-05-31", theme: "physics" },
+  { name: "Statistisk mekanik", nameEn: "Statistical Mechanics", credits: 7.5, date: "2023-10-19", theme: "physics" },
+  { name: "Kvantmekanik, fortsättningskurs", nameEn: "Advanced Quantum Mechanics", credits: 7.5, date: "2023-10-23", theme: "physics" },
+  { name: "Allmän relativitetsteori", nameEn: "General Relativity", credits: 6.0, date: "2024-01-10", theme: "physics" },
+  { name: "Speciell relativitetsteori", nameEn: "Special Relativity", credits: 6.0, date: "2024-01-15", theme: "physics" },
+  { name: "Relativistisk kvantfysik", nameEn: "Relativistic Quantum Physics", credits: 7.5, date: "2024-03-13", theme: "physics" },
+  { name: "Teoretisk partikelfysik", nameEn: "Theoretical Particle Physics", credits: 7.5, date: "2024-05-27", theme: "physics" },
+  { name: "Kvantfältteori", nameEn: "Quantum Field Theory", credits: 7.5, date: "2024-10-25", theme: "physics" },
 
   // ML/AI
-  { name: "Maskininlärningens grunder", nameEn: "Fundamentals of Machine Learning", credits: 7.5, grade: "A", date: "2023-04-26", theme: "ml-ai" },
-  { name: "Djupinlärning i Data Science", nameEn: "Deep Learning in Data Science", credits: 7.5, grade: "A", date: "2024-06-03", theme: "ml-ai" },
-  { name: "Maskininlärningsteori", nameEn: "Machine Learning Theory", credits: 7.5, grade: "D", date: "2024-06-07", theme: "ml-ai" },
-  { name: "Förstärkande inlärning", nameEn: "Reinforcement Learning", credits: 7.5, grade: "D", date: "2025-01-08", theme: "ml-ai" },
-  { name: "Djupinlärning, fortsättningskurs", nameEn: "Advanced Deep Learning", credits: 6.0, grade: "A", date: "2025-01-20", theme: "ml-ai" },
+  { name: "Maskininlärningens grunder", nameEn: "Fundamentals of Machine Learning", credits: 7.5, date: "2023-04-26", theme: "ml-ai" },
+  { name: "Djupinlärning i Data Science", nameEn: "Deep Learning in Data Science", credits: 7.5, date: "2024-06-03", theme: "ml-ai" },
+  { name: "Maskininlärningsteori", nameEn: "Machine Learning Theory", credits: 7.5, date: "2024-06-07", theme: "ml-ai" },
+  { name: "Förstärkande inlärning", nameEn: "Reinforcement Learning", credits: 7.5, date: "2025-01-08", theme: "ml-ai" },
+  { name: "Djupinlärning, fortsättningskurs", nameEn: "Advanced Deep Learning", credits: 6.0, date: "2025-01-20", theme: "ml-ai" },
 
   // Computing
-  { name: "Datorintroduktion", nameEn: "Introduction to Computers", credits: 1.5, grade: "P", date: "2019-09-23", theme: "computing" },
-  { name: "Grundläggande programmering", nameEn: "Fundamentals of Programming", credits: 5.0, grade: "A", date: "2019-10-18", theme: "computing" },
-  { name: "Grundläggande datalogi", nameEn: "Fundamentals of Computer Science", credits: 6.0, grade: "A", date: "2021-06-07", theme: "computing" },
-  { name: "Numeriska metoder, grundkurs IV", nameEn: "Numerical Methods", credits: 6.0, grade: "E", date: "2021-06-10", theme: "computing" },
-  { name: "Simulering och modellering", nameEn: "Simulation and Modelling", credits: 6.0, grade: "A", date: "2023-01-30", theme: "computing" },
-  { name: "Projektkurs i dataanalys", nameEn: "Data Analysis Project Course", credits: 7.5, grade: "P", date: "2025-01-02", theme: "computing" },
+  { name: "Datorintroduktion", nameEn: "Introduction to Computers", credits: 1.5, date: "2019-09-23", theme: "computing" },
+  { name: "Grundläggande programmering", nameEn: "Fundamentals of Programming", credits: 5.0, date: "2019-10-18", theme: "computing" },
+  { name: "Grundläggande datalogi", nameEn: "Fundamentals of Computer Science", credits: 6.0, date: "2021-06-07", theme: "computing" },
+  { name: "Numeriska metoder, grundkurs IV", nameEn: "Numerical Methods", credits: 6.0, date: "2021-06-10", theme: "computing" },
+  { name: "Simulering och modellering", nameEn: "Simulation and Modelling", credits: 6.0, date: "2023-01-30", theme: "computing" },
+  { name: "Projektkurs i dataanalys", nameEn: "Data Analysis Project Course", credits: 7.5, date: "2025-01-02", theme: "computing" },
 
   // Control & Engineering
-  { name: "Reglerteknik, allmän kurs", nameEn: "Control Theory", credits: 6.0, grade: "E", date: "2022-11-15", theme: "control" },
-  { name: "Hållfasthetslära, grundkurs med energimetoder", nameEn: "Solid Mechanics", credits: 9.0, grade: "D", date: "2022-06-02", theme: "engineering" },
+  { name: "Reglerteknik, allmän kurs", nameEn: "Control Theory", credits: 6.0, date: "2022-11-15", theme: "control" },
+  { name: "Hållfasthetslära, grundkurs med energimetoder", nameEn: "Solid Mechanics", credits: 9.0, date: "2022-06-02", theme: "engineering" },
 
   // Research & Teaching
-  { name: "Handledning, undervisning och lärande i datalogiutbildning", nameEn: "Teaching in Computer Science Education", credits: 3.0, grade: "P", date: "2022-05-19", theme: "research" },
-  { name: "Research Methodology in Physics", nameEn: "Research Methodology in Physics", credits: 3.0, grade: "P", date: "2023-12-15", theme: "research" },
-  { name: "Vetenskapsteori och vetenskaplig metodik (naturvetenskap)", nameEn: "Philosophy of Science and Scientific Methodology", credits: 4.5, grade: "D", date: "2024-10-23", theme: "research" },
-  { name: "Hållbar utveckling inom teknisk fysik", nameEn: "Sustainable Development in Engineering Physics", credits: 1.5, grade: "P", date: "2024-11-15", theme: "other" },
-  { name: "Examensarbete inom teknisk fysik, grundnivå", nameEn: "Bachelor's Thesis in Engineering Physics", credits: 15.0, grade: "P", date: "2023-06-07", theme: "research" },
+  { name: "Handledning, undervisning och lärande i datalogiutbildning", nameEn: "Teaching in Computer Science Education", credits: 3.0, date: "2022-05-19", theme: "research" },
+  { name: "Research Methodology in Physics", nameEn: "Research Methodology in Physics", credits: 3.0, date: "2023-12-15", theme: "research" },
+  { name: "Vetenskapsteori och vetenskaplig metodik (naturvetenskap)", nameEn: "Philosophy of Science and Scientific Methodology", credits: 4.5, date: "2024-10-23", theme: "research" },
+  { name: "Hållbar utveckling inom teknisk fysik", nameEn: "Sustainable Development in Engineering Physics", credits: 1.5, date: "2024-11-15", theme: "other" },
+  { name: "Examensarbete inom teknisk fysik, grundnivå", nameEn: "Bachelor's Thesis in Engineering Physics", credits: 15.0, date: "2023-06-07", theme: "research" },
 ];
 
 // ============ SKILL ECOSYSTEM ============
@@ -374,14 +373,14 @@ export const skillLeaves: SkillLeaf[] = [
   { id: 'cmb', name: 'CMB Absorbers (LiteBIRD)', rootIds: ['high-energy-physics', 'scientific-computing'], evidence: 'Microwave absorbers for JAXA satellite', type: 'experience' },
   { id: 'mattecentrum-lead', name: 'Mattecentrum Leadership', rootIds: ['leadership'], evidence: '30 classrooms, 180k SEK budget', type: 'experience' },
   
-  // Courses as leaves
-  { id: 'dl-course', name: 'Deep Learning (A)', rootIds: ['deep-learning', 'ml-theory'], evidence: 'Grade A - 7.5 hp', type: 'course' },
-  { id: 'adv-dl-course', name: 'Advanced Deep Learning (A)', rootIds: ['deep-learning', 'generative-modeling'], evidence: 'Grade A - 6.0 hp', type: 'course' },
-  { id: 'ml-course', name: 'ML Fundamentals (A)', rootIds: ['ml-theory', 'math-foundations'], evidence: 'Grade A - 7.5 hp', type: 'course' },
+  // Courses as leaves (no grades shown)
+  { id: 'dl-course', name: 'Deep Learning', rootIds: ['deep-learning', 'ml-theory'], evidence: '7.5 hp', type: 'course' },
+  { id: 'adv-dl-course', name: 'Advanced Deep Learning', rootIds: ['deep-learning', 'generative-modeling'], evidence: '6.0 hp', type: 'course' },
+  { id: 'ml-course', name: 'ML Fundamentals', rootIds: ['ml-theory', 'math-foundations'], evidence: '7.5 hp', type: 'course' },
   { id: 'rl-course', name: 'Reinforcement Learning', rootIds: ['reinforcement-learning', 'control-robotics'], evidence: '7.5 hp', type: 'course' },
-  { id: 'qft-course', name: 'Quantum Field Theory', rootIds: ['high-energy-physics', 'physics-foundations'], evidence: 'Grade C - 7.5 hp', type: 'course' },
-  { id: 'prob-course', name: 'Probability & Statistics (A)', rootIds: ['math-foundations', 'ml-theory'], evidence: 'Grade A - 6.0 hp', type: 'course' },
-  { id: 'sim-course', name: 'Simulation & Modelling (A)', rootIds: ['scientific-computing', 'math-foundations'], evidence: 'Grade A - 6.0 hp', type: 'course' },
+  { id: 'qft-course', name: 'Quantum Field Theory', rootIds: ['high-energy-physics', 'physics-foundations'], evidence: '7.5 hp', type: 'course' },
+  { id: 'prob-course', name: 'Probability & Statistics', rootIds: ['math-foundations', 'ml-theory'], evidence: '6.0 hp', type: 'course' },
+  { id: 'sim-course', name: 'Simulation & Modelling', rootIds: ['scientific-computing', 'math-foundations'], evidence: '6.0 hp', type: 'course' },
 ];
 
 // Helper function to get leaves by root
@@ -396,14 +395,13 @@ export function getRootsByLeaf(leafId: string): SkillRoot[] {
   return skillRoots.filter(root => leaf.rootIds.includes(root.id));
 }
 
-// Calculate stats
+// Calculate stats (no grades)
 export function getCourseStats() {
   const totalCredits = courses.reduce((sum, c) => sum + c.credits, 0);
-  const aGradeCourses = courses.filter(c => c.grade === 'A');
   const byTheme = courses.reduce((acc, c) => {
     acc[c.theme] = (acc[c.theme] || 0) + c.credits;
     return acc;
   }, {} as Record<CourseTheme, number>);
   
-  return { totalCredits, aGradeCourses, byTheme };
+  return { totalCredits, byTheme };
 }
