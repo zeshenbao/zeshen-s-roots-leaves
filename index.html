@@ -1,22 +1,46 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <title>Zeshen Bao | Engineering Physics & AI/ML Portfolio</title>
+    <meta name="description" content="Engineering Physics × AI/ML — Building intelligent systems from first principles. Portfolio showcasing projects in generative modeling, reinforcement learning, and robotics." />
+    <meta name="author" content="Zeshen Bao" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    <meta property="og:title" content="Lovable App" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <meta property="og:title" content="Zeshen Bao | Engineering Physics & AI/ML Portfolio" />
+    <meta property="og:description" content="Engineering Physics × AI/ML — Building intelligent systems from first principles." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
+    <meta name="twitter:site" content="@lovaborhz" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Prevent flash of wrong theme -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('theme-storage');
+          if (stored) {
+            var parsed = JSON.parse(stored);
+            var mode = parsed.state && parsed.state.themeMode;
+            if (mode === 'day') {
+              document.documentElement.classList.remove('dark');
+              document.documentElement.classList.add('light');
+            } else if (mode === 'night') {
+              document.documentElement.classList.add('dark');
+              document.documentElement.classList.remove('light');
+            } else {
+              // system mode - check preference
+              if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+              }
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body>
