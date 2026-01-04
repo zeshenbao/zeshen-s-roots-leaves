@@ -5,20 +5,23 @@ import { Button } from '@/components/ui/button';
 import { person } from '@/lib/content';
 import { usePortfolioStore } from '@/lib/store';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useActiveSection } from '@/hooks/useActiveSection';
 
 const navItems = [
-  { label: 'Home', href: '#home' },
-  { label: 'Ecosystem', href: '#ecosystem' },
-  { label: 'Projects', href: '#projects' },
-  { label: 'Experience', href: '#experience' },
-  { label: 'Academics', href: '#academics' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Home', href: '#home', id: 'home' },
+  { label: 'About', href: '#about', id: 'about' },
+  { label: 'Skills', href: '#ecosystem', id: 'ecosystem' },
+  { label: 'Projects', href: '#projects', id: 'projects' },
+  { label: 'Experience', href: '#experience', id: 'experience' },
+  { label: 'Academics', href: '#academics', id: 'academics' },
+  { label: 'Contact', href: '#contact', id: 'contact' },
 ];
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { setCommandPaletteOpen } = usePortfolioStore();
+  const activeSection = useActiveSection();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,12 +45,17 @@ export function Navigation() {
         
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center gap-6">
-          <ul className="flex items-center gap-8" role="list">
+          <ul className="flex items-center gap-6" role="list">
             {navItems.map(item => (
               <li key={item.href}>
                 <a
                   href={item.href}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors link-underline"
+                  className={`text-sm transition-colors link-underline ${
+                    activeSection === item.id 
+                      ? 'text-primary font-medium' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-current={activeSection === item.id ? 'page' : undefined}
                 >
                   {item.label}
                 </a>
@@ -96,13 +104,18 @@ export function Navigation() {
             exit={{ opacity: 0, y: -10 }}
             className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border"
           >
-            <ul className="container px-6 py-4 space-y-4">
+            <ul className="container px-6 py-4 space-y-2">
               {navItems.map(item => (
                 <li key={item.href}>
                   <a
                     href={item.href}
-                    className="block text-foreground py-2"
+                    className={`block py-3 px-2 rounded-lg text-lg transition-colors ${
+                      activeSection === item.id 
+                        ? 'text-primary font-medium bg-primary/10' 
+                        : 'text-foreground hover:bg-muted'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
+                    aria-current={activeSection === item.id ? 'page' : undefined}
                   >
                     {item.label}
                   </a>

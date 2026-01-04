@@ -6,15 +6,15 @@ import { ExternalLink, FileText, Code } from 'lucide-react';
 
 export function ProjectsSection() {
   return (
-    <section id="projects" className="py-24 px-6" aria-label="Projects">
-      <div className="container max-w-6xl mx-auto">
+    <section id="projects" className="py-24 px-6 bg-muted/10" aria-labelledby="projects-heading">
+      <div className="container max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4">
+          <h2 id="projects-heading" className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4">
             Projects & Technical Reports
           </h2>
           <p className="text-muted-foreground mb-12 max-w-2xl">

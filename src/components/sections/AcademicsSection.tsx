@@ -59,8 +59,8 @@ export function AcademicsSection() {
   }, [filteredCourses]);
 
   return (
-    <section id="academics" className="py-24 px-6">
-      <div className="container max-w-6xl mx-auto">
+    <section id="academics" className="py-24 px-6 bg-muted/10" aria-labelledby="academics-heading">
+      <div className="container max-w-5xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -68,7 +68,7 @@ export function AcademicsSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 id="academics-heading" className="font-display text-3xl md:text-4xl font-medium text-foreground mb-4">
             Academic Foundation
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
