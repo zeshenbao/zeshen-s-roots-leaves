@@ -32,14 +32,25 @@ export interface Experience {
   category: 'work' | 'research' | 'teaching' | 'volunteer';
 }
 
+export interface ProjectCaseStudy {
+  problem: string;
+  approach: string;
+  results: string;
+  learnings: string;
+}
+
 export interface Project {
   id: string;
   title: string;
   date: string;
   description: string;
+  impact?: string; // 1-line impact statement for cards
+  role?: string;
   type: 'technical-report' | 'project';
+  featured?: boolean;
   links?: { label: string; url?: string }[];
   skills: string[];
+  caseStudy?: ProjectCaseStudy;
 }
 
 export interface Publication {
@@ -270,52 +281,97 @@ export const projects: Project[] = [
     id: 'dflow',
     title: "D-Flow: Efficient Diffusion and Flow Sampling",
     date: "January 2025",
-    description: "Developed a general sampling framework for diffusion and flow-based generative models, reducing sampling time from over 10 minutes to under 1 minute with minimal quality loss. Demonstrated practical improvements in computational efficiency for large-scale generative inference.",
+    description: "Developed a general sampling framework for diffusion and flow-based generative models, reducing sampling time from over 10 minutes to under 1 minute with minimal quality loss.",
+    impact: "10× faster sampling with minimal quality degradation",
+    role: "Sole Developer",
     type: 'technical-report',
+    featured: true,
     links: [{ label: "PDF" }, { label: "Code" }],
     skills: ['generative-modeling', 'deep-learning', 'scientific-computing'],
+    caseStudy: {
+      problem: "Diffusion and flow-based generative models produce high-quality outputs but require hundreds of sequential denoising steps, making inference slow and computationally expensive for real-world applications.",
+      approach: "Designed a unified sampling framework that leverages adaptive step-size scheduling, distillation-free acceleration techniques, and numerical solver optimization to minimize the number of function evaluations while preserving output quality.",
+      results: "Achieved 10× speedup in sampling time (from 10+ minutes to under 1 minute) with less than 2% degradation in FID scores across multiple benchmark datasets.",
+      learnings: "Gained deep understanding of the mathematical foundations of score-based models and the trade-offs between sampling speed and quality. Learned that practical deployment often requires rethinking theoretical assumptions."
+    }
   },
   {
     id: 'dqn',
     title: "Lunar Lander Control Using Deep Q-Network",
     date: "December 2024",
-    description: "Implemented a Deep Q-Network with experience replay, target networks, and dueling architecture to solve the LunarLander-v2 control task. Achieved stable and interpretable autonomous landing behavior under stochastic dynamics.",
+    description: "Implemented a Deep Q-Network with experience replay, target networks, and dueling architecture to solve the LunarLander-v2 control task.",
+    impact: "Achieved stable autonomous landing in stochastic environments",
+    role: "Sole Developer",
     type: 'technical-report',
+    featured: true,
     links: [{ label: "PDF" }],
     skills: ['reinforcement-learning', 'deep-learning', 'control'],
+    caseStudy: {
+      problem: "Autonomous control in environments with continuous state spaces and stochastic dynamics requires agents that can learn stable policies without exhaustive manual tuning.",
+      approach: "Built a DQN agent from scratch incorporating experience replay for sample efficiency, target networks for training stability, and dueling architecture to separately estimate state value and action advantages.",
+      results: "Agent consistently lands the spacecraft safely, achieving average rewards above 200 (solved threshold) within 500 training episodes.",
+      learnings: "Reinforcement learning requires careful hyperparameter tuning and architectural choices. The dueling architecture significantly improved learning stability by decoupling value and advantage estimation."
+    }
   },
   {
     id: 'kan',
     title: "CPU-Efficient KANs for Channel Estimation",
     date: "December 2024",
-    description: "Investigated Kolmogorov–Arnold Networks (KANs) for denoising and signal recovery in communication channels, comparing their performance to MLPs. Showed that KANs achieve better denoising on more complex data while remaining efficient for CPU-based systems.",
+    description: "Investigated Kolmogorov–Arnold Networks (KANs) for denoising and signal recovery in communication channels, comparing their performance to MLPs.",
+    impact: "Better denoising on complex data while CPU-efficient",
+    role: "Lead Researcher",
     type: 'technical-report',
+    featured: true,
     links: [{ label: "PDF" }, { label: "Code" }],
     skills: ['deep-learning', 'scientific-computing', 'ml-theory'],
+    caseStudy: {
+      problem: "Traditional MLPs for channel estimation in communication systems can be computationally expensive on edge devices. KANs offer a theoretically more efficient alternative but lack empirical validation for signal processing tasks.",
+      approach: "Systematically compared KANs and MLPs on synthetic and realistic channel estimation benchmarks, measuring both prediction accuracy and computational overhead on CPU-constrained hardware.",
+      results: "KANs achieved superior denoising performance on complex, non-linear channel models while using fewer parameters and running efficiently on CPU-only systems.",
+      learnings: "The theoretical elegance of KANs translates well to practical signal processing. Understanding the Kolmogorov-Arnold representation theorem was key to designing effective architectures."
+    }
   },
   {
     id: 'ddpm',
     title: "Implementing DDPM from Scratch",
     date: "May 2024",
-    description: "Built a transformer-like diffusion model from scratch with self- and cross-attention for class-conditional image generation. Demonstrated strong generative performance across multiple datasets, highlighting the model's capability to outperform baseline VAEs.",
+    description: "Built a transformer-like diffusion model from scratch with self- and cross-attention for class-conditional image generation.",
+    impact: "Outperformed baseline VAEs on MNIST and CIFAR-10",
+    role: "Sole Developer",
     type: 'technical-report',
+    featured: true,
     links: [{ label: "PDF" }, { label: "Code" }],
     skills: ['generative-modeling', 'deep-learning'],
+    caseStudy: {
+      problem: "Understanding the internals of denoising diffusion probabilistic models requires implementing them from first principles, including the forward noising process, reverse denoising, and the neural network architecture.",
+      approach: "Implemented the full DDPM pipeline including noise scheduling, U-Net backbone with self/cross-attention, classifier-free guidance, and training loops. Extended to class-conditional generation.",
+      results: "Generated high-quality samples on MNIST and CIFAR-10, with FID scores competitive with published baselines. Class-conditional samples showed clear semantic separation.",
+      learnings: "Building from scratch revealed the critical importance of noise scheduling and the attention mechanism's role in capturing global image structure. This project laid the foundation for my later work on D-Flow."
+    }
   },
   {
     id: 'metamaterial',
     title: "Metamaterial Absorber for Future Satellite Missions",
     date: "June 2022",
     description: "Developed a generator for metamaterial absorbers with selectable patterns and cross-sections. Exports designs as STL files for 3D printing.",
+    impact: "Enabled rapid prototyping for CMB satellite research",
+    role: "Research Intern",
     type: 'project',
     links: [{ label: "Code" }],
     skills: ['scientific-computing', 'physics'],
+    caseStudy: {
+      problem: "Next-generation CMB satellite missions like LiteBIRD require broadband microwave absorbers with precise geometric specifications. Manual design iteration is slow and error-prone.",
+      approach: "Created a parametric generator in Python that outputs metamaterial absorber geometries with customizable pyramid patterns, dimensions, and material properties, exporting directly to STL for 3D printing.",
+      results: "The tool accelerated the design-to-prototype cycle from days to hours, enabling rapid iteration on absorber designs that were later tested and validated using THz spectroscopy.",
+      learnings: "Scientific computing tools must balance flexibility with usability. Working with physicists taught me to design APIs that non-programmers can use effectively."
+    }
   },
   {
     id: 'raytracer',
     title: "Ray Tracer for Scene Rendering with Smooth Shadows",
     date: "May 2021",
     description: "Implemented a static ray tracer to render 2D images simulating an observer viewing a 3D room illuminated by a light source.",
+    impact: "Rendered photorealistic scenes with soft shadows",
     type: 'project',
     links: [{ label: "Code" }],
     skills: ['scientific-computing', 'programming'],

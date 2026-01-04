@@ -1,10 +1,31 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { projects } from '@/lib/content';
-import { ExternalLink, FileText, Code } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { projects, type Project } from '@/lib/content';
+import { ExternalLink, FileText, Code, Star, ChevronRight, TrendingUp } from 'lucide-react';
+import { ProjectCaseStudyModal } from '@/components/ProjectCaseStudyModal';
 
 export function ProjectsSection() {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Sort: featured first, then by date
+  const sortedProjects = [...projects].sort((a, b) => {
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
+  const featuredProjects = sortedProjects.filter(p => p.featured);
+  const otherProjects = sortedProjects.filter(p => !p.featured);
+
+  const openCaseStudy = (project: Project) => {
+    setSelectedProject(project);
+    setModalOpen(true);
+  };
+
   return (
     <section id="projects" className="py-24 px-6 bg-muted/10" aria-labelledby="projects-heading">
       <div className="container max-w-5xl mx-auto">
@@ -18,62 +39,167 @@ export function ProjectsSection() {
             Projects & Technical Reports
           </h2>
           <p className="text-muted-foreground mb-12 max-w-2xl">
-            Hands-on work in generative modeling, reinforcement learning, and scientific computing.
+            Hands-on work in generative modeling, reinforcement learning, and scientific computing. 
+            Click any project for the full case study.
           </p>
         </motion.div>
-        
-        <div className="grid md:grid-cols-2 gap-6">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card variant="interactive" className="h-full">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <Badge variant={project.type === 'technical-report' ? 'root' : 'leaf'} className="mb-3">
-                        {project.type === 'technical-report' ? (
-                          <><FileText className="w-3 h-3 mr-1" /> Technical Report</>
-                        ) : (
-                          <><Code className="w-3 h-3 mr-1" /> Project</>
-                        )}
-                      </Badge>
-                      <CardTitle className="text-xl">{project.title}</CardTitle>
-                    </div>
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">{project.date}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="mb-4 text-sm leading-relaxed">
-                    {project.description}
-                  </CardDescription>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.skills.map(skill => (
-                      <Badge key={skill} variant="outline" className="text-xs">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                  {project.links && (
-                    <div className="flex gap-3 text-sm">
-                      {project.links.map(link => (
-                        <span key={link.label} className="flex items-center gap-1 text-primary">
-                          <ExternalLink className="w-3 h-3" />
-                          {link.label}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+
+        {/* Featured Projects */}
+        {featuredProjects.length > 0 && (
+          <div className="mb-12">
+            <h3 className="text-sm uppercase tracking-widest text-primary mb-6 flex items-center gap-2">
+              <Star className="w-4 h-4" />
+              Featured Work
+            </h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              {featuredProjects.map((project, index) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  index={index}
+                  featured
+                  onOpenCaseStudy={openCaseStudy}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Other Projects */}
+        {otherProjects.length > 0 && (
+          <div>
+            <h3 className="text-sm uppercase tracking-widest text-muted-foreground mb-6">
+              Other Projects
+            </h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              {otherProjects.map((project, index) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  index={index + featuredProjects.length}
+                  onOpenCaseStudy={openCaseStudy}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <ProjectCaseStudyModal
+          project={selectedProject}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
       </div>
     </section>
+  );
+}
+
+interface ProjectCardProps {
+  project: Project;
+  index: number;
+  featured?: boolean;
+  onOpenCaseStudy: (project: Project) => void;
+}
+
+function ProjectCard({ project, index, featured, onOpenCaseStudy }: ProjectCardProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+    >
+      <Card
+        variant="interactive"
+        className={`h-full cursor-pointer group transition-all hover:shadow-lg ${
+          featured ? 'ring-1 ring-primary/20' : ''
+        }`}
+        onClick={() => onOpenCaseStudy(project)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onOpenCaseStudy(project);
+          }
+        }}
+        aria-label={`View case study for ${project.title}`}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                {featured && (
+                  <Badge variant="default" className="bg-primary/20 text-primary border-primary/30 text-xs">
+                    <Star className="w-3 h-3 mr-1" />
+                    Featured
+                  </Badge>
+                )}
+                <Badge variant={project.type === 'technical-report' ? 'root' : 'leaf'} className="text-xs">
+                  {project.type === 'technical-report' ? (
+                    <><FileText className="w-3 h-3 mr-1" /> Report</>
+                  ) : (
+                    <><Code className="w-3 h-3 mr-1" /> Project</>
+                  )}
+                </Badge>
+              </div>
+              <CardTitle className="text-lg leading-snug group-hover:text-primary transition-colors">
+                {project.title}
+              </CardTitle>
+            </div>
+            <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
+              {project.date}
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {/* Impact statement */}
+          {project.impact && (
+            <p className="text-sm text-primary font-medium mb-3 flex items-start gap-2">
+              <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+              {project.impact}
+            </p>
+          )}
+
+          {/* Description - truncated */}
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+            {project.description}
+          </p>
+
+          {/* Skills */}
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {project.skills.slice(0, 3).map(skill => (
+              <Badge key={skill} variant="outline" className="text-xs">
+                {skill}
+              </Badge>
+            ))}
+            {project.skills.length > 3 && (
+              <Badge variant="outline" className="text-xs text-muted-foreground">
+                +{project.skills.length - 3}
+              </Badge>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between">
+            {/* Links preview */}
+            <div className="flex gap-2 text-xs text-muted-foreground">
+              {project.links?.slice(0, 2).map(link => (
+                <span key={link.label} className="flex items-center gap-1">
+                  <ExternalLink className="w-3 h-3" />
+                  {link.label}
+                </span>
+              ))}
+            </div>
+
+            {/* View case study hint */}
+            <span className="text-xs text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              View details
+              <ChevronRight className="w-3 h-3" />
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
