@@ -84,11 +84,58 @@ buildAdjacencyMaps();
 /**
  * Get all nodes upstream from a given node (toward roots)
  * Used when a leaf is selected - shows only the path to its foundations
+ * IMPORTANT: For leaves, only include roots that are in the branch's rootIds
  */
 export function getUpstreamSubgraph(nodeId: string): VisibleGraph {
   const nodeIds = new Set<string>([nodeId]);
   const edgeIds = new Set<string>();
   
+  const nodeType = getNodeType(nodeId);
+  
+  // Special handling for leaves - only show roots connected via branch.rootIds
+  if (nodeType === 'leaf') {
+    const leaf = treeLeaves.find(l => l.id === nodeId);
+    if (!leaf) return { nodeIds, edgeIds };
+    
+    const branch = treeBranches.find(b => b.id === leaf.branchId);
+    if (!branch) return { nodeIds, edgeIds };
+    
+    // Add branch
+    nodeIds.add(branch.id);
+    
+    // Add leaf -> branch edge
+    treeEdges.forEach(edge => {
+      if (edge.source === branch.id && edge.target === nodeId) {
+        edgeIds.add(edge.id);
+      }
+    });
+    
+    // Add trunk
+    nodeIds.add('trunk');
+    
+    // Add trunk -> branch edge
+    treeEdges.forEach(edge => {
+      if (edge.source === 'trunk' && edge.target === branch.id) {
+        edgeIds.add(edge.id);
+      }
+    });
+    
+    // Add ONLY the roots specified in branch.rootIds
+    branch.rootIds.forEach(rootId => {
+      nodeIds.add(rootId);
+      
+      // Add root -> trunk edge
+      treeEdges.forEach(edge => {
+        if (edge.source === rootId && edge.target === 'trunk') {
+          edgeIds.add(edge.id);
+        }
+      });
+    });
+    
+    return { nodeIds, edgeIds };
+  }
+  
+  // For non-leaf nodes, use standard BFS upstream
   const queue = [nodeId];
   
   while (queue.length > 0) {
