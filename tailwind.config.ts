@@ -18,6 +18,19 @@ export default {
         body: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
+      fontSize: {
+        // Refined type scale for better hierarchy
+        'display-2xl': ['4.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'display-xl': ['3.75rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'display-lg': ['3rem', { lineHeight: '1.15', letterSpacing: '-0.01em' }],
+        'display-md': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
+        'display-sm': ['1.875rem', { lineHeight: '1.25' }],
+      },
+      spacing: {
+        // Consistent section spacing
+        'section': '6rem',
+        'section-sm': '4rem',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

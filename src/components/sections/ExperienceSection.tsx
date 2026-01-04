@@ -21,18 +21,19 @@ export function ExperienceSection() {
   });
 
   return (
-    <section id="experience" className="py-24 px-6" aria-labelledby="experience-heading">
-      <div className="container max-w-5xl mx-auto">
+    <section id="experience" className="section-container" aria-labelledby="experience-heading">
+      <div className="section-inner">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
+          className="section-accent"
         >
-          <h2 id="experience-heading" className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4">
+          <h2 id="experience-heading" className="section-title">
             Experience
           </h2>
-          <p className="text-muted-foreground mb-12">
+          <p className="section-subtitle mb-12">
             Research, teaching, and leadership roles.
           </p>
         </motion.div>

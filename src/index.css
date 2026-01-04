@@ -269,13 +269,91 @@
 }
 
 @layer components {
+  /* ============ SECTION STYLING ============ */
+  /* Consistent section container */
+  .section-container {
+    @apply py-24 px-6;
+  }
+  
+  .section-container-alt {
+    @apply py-24 px-6 bg-muted/10;
+  }
+  
+  .section-inner {
+    @apply container max-w-5xl mx-auto;
+  }
+  
+  /* Section headers - unified styling */
+  .section-title {
+    @apply font-display text-3xl sm:text-4xl font-medium text-foreground mb-6;
+  }
+  
+  .section-subtitle {
+    @apply text-muted-foreground text-lg leading-relaxed max-w-3xl;
+  }
+  
+  .section-header-centered {
+    @apply text-center mb-12;
+  }
+  
+  /* Section decorative accent bar */
+  .section-accent {
+    @apply relative pl-4;
+  }
+  
+  .section-accent::before {
+    content: '';
+    @apply absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-primary to-secondary rounded-full;
+  }
+
+  /* ============ TYPOGRAPHY UTILITIES ============ */
+  /* Display text - for hero and large headers */
+  .text-display-xl {
+    @apply font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium leading-tight tracking-tight;
+  }
+  
+  .text-display-lg {
+    @apply font-display text-3xl sm:text-4xl md:text-5xl font-medium leading-tight;
+  }
+  
+  .text-display-md {
+    @apply font-display text-2xl sm:text-3xl font-medium;
+  }
+  
+  .text-display-sm {
+    @apply font-display text-xl sm:text-2xl font-medium;
+  }
+  
+  /* Body text sizes */
+  .text-body-lg {
+    @apply text-base sm:text-lg leading-relaxed text-muted-foreground;
+  }
+  
+  .text-body {
+    @apply text-base leading-relaxed text-muted-foreground;
+  }
+  
+  .text-body-sm {
+    @apply text-sm leading-relaxed text-muted-foreground;
+  }
+  
+  /* Accent text */
+  .text-accent {
+    @apply text-primary font-medium;
+  }
+
+  /* ============ GLASS MORPHISM ============ */
   /* Glass morphism card */
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-border/50;
     box-shadow: var(--shadow-md), inset 0 1px 0 hsl(45 20% 95% / 0.03);
   }
+  
+  .glass-subtle {
+    @apply bg-card/40 backdrop-blur-md border border-border/30;
+  }
 
-  /* Glowing elements */
+  /* ============ GLOWING ELEMENTS ============ */
   .glow-primary {
     box-shadow: var(--shadow-glow);
   }
@@ -283,14 +361,27 @@
   .glow-accent {
     box-shadow: var(--shadow-glow-accent);
   }
+  
+  .glow-interactive {
+    @apply transition-shadow duration-300;
+  }
+  
+  .glow-interactive:hover {
+    box-shadow: var(--shadow-glow);
+  }
 
-  /* Text gradient */
+  /* ============ TEXT GRADIENT ============ */
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background-image: var(--gradient-accent);
   }
+  
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+  }
 
-  /* Skill tree nodes */
+  /* ============ SKILL TREE NODES ============ */
   .skill-root {
     @apply rounded-full bg-root-node border-2 border-root-node-glow;
     box-shadow: 0 0 20px hsl(var(--root-node-glow) / 0.3);
@@ -301,7 +392,7 @@
     box-shadow: 0 0 15px hsl(var(--leaf-node-glow) / 0.2);
   }
 
-  /* Interactive hover states */
+  /* ============ INTERACTIVE STATES ============ */
   .hover-lift {
     @apply transition-all duration-300;
   }
@@ -310,8 +401,21 @@
     @apply -translate-y-1;
     box-shadow: var(--shadow-lg);
   }
+  
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  /* Press effect */
+  .press-effect {
+    @apply transition-transform duration-150 active:scale-[0.98];
+  }
 
-  /* Link underline animation */
+  /* ============ LINK STYLES ============ */
   .link-underline {
     @apply relative;
   }
@@ -324,8 +428,16 @@
   .link-underline:hover::after {
     @apply w-full;
   }
+  
+  .link-subtle {
+    @apply text-muted-foreground hover:text-foreground transition-colors duration-200;
+  }
+  
+  .link-primary {
+    @apply text-primary hover:text-primary-glow transition-colors duration-200;
+  }
 
-  /* Section headers */
+  /* ============ SECTION HEADERS ============ */
   .section-header {
     @apply relative inline-block;
   }
@@ -335,7 +447,7 @@
     @apply absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full;
   }
 
-  /* Timeline styling */
+  /* ============ TIMELINE STYLING ============ */
   .timeline-line {
     @apply absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-primary/50 via-primary/20 to-transparent;
   }
@@ -343,6 +455,15 @@
   .timeline-dot {
     @apply w-3 h-3 rounded-full bg-primary border-2 border-background;
     box-shadow: 0 0 12px hsl(var(--primary) / 0.5);
+  }
+  
+  /* ============ DIVIDERS ============ */
+  .divider {
+    @apply h-px bg-gradient-to-r from-transparent via-border to-transparent;
+  }
+  
+  .divider-vertical {
+    @apply w-px bg-gradient-to-b from-transparent via-border to-transparent;
   }
 }
 

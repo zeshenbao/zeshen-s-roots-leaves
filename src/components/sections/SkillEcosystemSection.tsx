@@ -421,21 +421,21 @@ export function SkillEcosystemSection() {
     <section 
       id="ecosystem" 
       ref={inViewRef}
-      className="relative py-24 px-6 min-h-screen bg-muted/10"
+      className="relative section-container-alt min-h-screen"
       aria-labelledby="ecosystem-heading"
     >
-      <div className="container max-w-5xl mx-auto">
+      <div className="section-inner">
         {/* Section Header */}
-        <div className="text-center mb-8">
+        <div className="section-header-centered">
           <h2 
             id="ecosystem-heading"
-            className="font-display text-3xl md:text-4xl font-medium text-foreground mb-4"
+            className="section-title"
           >
             Skill Ecosystem
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm leading-relaxed">
-            An interactive visualization of interconnected competencies. <strong>Roots</strong> (foundations) 
-            feed through the trunk into specialized <strong>branches</strong>, producing <strong>leaves</strong> (projects, research).
+          <p className="section-subtitle mx-auto text-center max-w-2xl text-sm mb-8">
+            An interactive visualization of interconnected competencies. <strong className="text-foreground">Roots</strong> (foundations) 
+            feed through the trunk into specialized <strong className="text-foreground">branches</strong>, producing <strong className="text-foreground">leaves</strong> (projects, research).
             <span className="text-primary ml-1">★ Golden leaves are top outcomes.</span>
           </p>
         </div>

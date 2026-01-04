@@ -59,24 +59,24 @@ export function AcademicsSection() {
   }, [filteredCourses]);
 
   return (
-    <section id="academics" className="py-24 px-6 bg-muted/10" aria-labelledby="academics-heading">
-      <div className="container max-w-5xl mx-auto">
+    <section id="academics" className="section-container-alt" aria-labelledby="academics-heading">
+      <div className="section-inner">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="section-header-centered"
         >
-          <h2 id="academics-heading" className="font-display text-3xl md:text-4xl font-medium text-foreground mb-4">
+          <h2 id="academics-heading" className="section-title">
             Academic Foundation
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="section-subtitle mx-auto text-center max-w-2xl">
             Coursework spanning mathematics, physics, machine learning, and engineering — 
             building a rigorous foundation for research and innovation.
           </p>
           <div className="flex items-center justify-center gap-2 mt-4">
-            <GraduationCap className="w-5 h-5 text-primary" />
+            <GraduationCap className="w-5 h-5 text-primary" aria-hidden="true" />
             <span className="text-xl font-semibold text-foreground">{stats.totalCredits} hp</span>
             <span className="text-muted-foreground">total credits</span>
           </div>
