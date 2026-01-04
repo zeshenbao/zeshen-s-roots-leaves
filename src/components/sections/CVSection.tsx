@@ -69,24 +69,24 @@ export function CVSection() {
     <section 
       id="cv" 
       ref={sectionRef}
-      className="py-24 px-6 bg-muted/10" 
+      className="section-container-alt" 
       aria-labelledby="cv-heading"
     >
-      <div className="container max-w-5xl mx-auto">
+      <div className="section-inner">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          className="section-header-centered"
         >
           <h2 
             id="cv-heading"
-            className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4"
+            className="section-title"
           >
             Curriculum Vitae
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="section-subtitle mx-auto text-center max-w-2xl mb-8">
             Download my full CV or preview it below. Generated from the same data shown throughout this portfolio.
           </p>
           

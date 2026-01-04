@@ -7,19 +7,19 @@ import { Button } from '@/components/ui/button';
 
 export function ContactSection() {
   return (
-    <section id="contact" className="py-24 px-6" aria-labelledby="contact-heading">
-      <div className="container max-w-5xl mx-auto">
+    <section id="contact" className="section-container" aria-labelledby="contact-heading">
+      <div className="section-inner">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="section-header-centered"
         >
-          <h2 id="contact-heading" className="font-display text-3xl sm:text-4xl font-medium text-foreground mb-4">
+          <h2 id="contact-heading" className="section-title">
             Get in Touch
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+          <p className="section-subtitle mx-auto text-center max-w-xl mb-12">
             Open to opportunities in AI/ML research and engineering.
           </p>
         </motion.div>

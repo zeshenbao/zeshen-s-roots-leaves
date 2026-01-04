@@ -25,7 +25,7 @@ export function HeroSection() {
           
           <h1 
             id="hero-heading"
-            className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium text-foreground mb-6 leading-tight"
+            className="text-display-xl text-foreground mb-6"
           >
             {person.name}
           </h1>
@@ -34,7 +34,7 @@ export function HeroSection() {
             {person.headline}
           </p>
           
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-8 text-base sm:text-lg leading-relaxed">
+          <p className="text-body-lg max-w-2xl mx-auto mb-8">
             {education[0].degree} at {education[0].institution}
           </p>
           
@@ -56,13 +56,13 @@ export function HeroSection() {
             </Button>
           </div>
           
-          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <a href={`mailto:${person.email}`} className="flex items-center gap-2 hover:text-primary transition-colors">
-              <Mail className="w-4 h-4" />
+          <div className="flex items-center justify-center gap-6 text-sm">
+            <a href={`mailto:${person.email}`} className="flex items-center gap-2 link-subtle">
+              <Mail className="w-4 h-4" aria-hidden="true" />
               {person.email}
             </a>
-            <a href={`tel:${person.phone}`} className="flex items-center gap-2 hover:text-primary transition-colors">
-              <Phone className="w-4 h-4" />
+            <a href={`tel:${person.phone}`} className="flex items-center gap-2 link-subtle">
+              <Phone className="w-4 h-4" aria-hidden="true" />
               {person.phone}
             </a>
           </div>
