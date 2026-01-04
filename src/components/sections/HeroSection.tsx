@@ -3,6 +3,7 @@ import { ArrowDown, Download, Mail, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { person, education } from '@/lib/content';
+import { generateResumePDF } from '@/lib/generate-resume';
 
 export function HeroSection() {
   return (
@@ -39,6 +40,10 @@ export function HeroSection() {
               <a href="#projects">
                 View Projects
               </a>
+            </Button>
+            <Button variant="heroOutline" size="lg" onClick={generateResumePDF}>
+              <Download className="w-4 h-4 mr-2" />
+              Download CV
             </Button>
             <Button variant="heroOutline" size="lg" asChild>
               <a href={`mailto:${person.email}`}>
