@@ -186,7 +186,7 @@ export function CinematicBackground() {
   if (featureFlags.reducedMotion || !featureFlags.backgroundEnabled) {
     return (
       <div 
-        className="fixed inset-0 -z-10"
+        className="fixed inset-0 z-0 pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse at 50% 100%, hsl(145 30% 8%) 0%, hsl(220 20% 4%) 70%)',
         }}
@@ -197,7 +197,7 @@ export function CinematicBackground() {
 
   return (
     <div 
-      className="fixed inset-0 -z-10"
+      className="fixed inset-0 z-0 pointer-events-none"
       aria-hidden="true"
       role="presentation"
     >

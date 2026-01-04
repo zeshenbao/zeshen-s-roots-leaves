@@ -6,6 +6,7 @@ import { person } from '@/lib/content';
 
 const navItems = [
   { label: 'Home', href: '#home' },
+  { label: 'Ecosystem', href: '#ecosystem' },
   { label: 'Projects', href: '#projects' },
   { label: 'Experience', href: '#experience' },
   { label: 'Contact', href: '#contact' },

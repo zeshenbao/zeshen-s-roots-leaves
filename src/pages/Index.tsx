@@ -1,6 +1,7 @@
 import { CinematicBackground } from '@/components/CinematicBackground';
 import { Navigation } from '@/components/Navigation';
 import { HeroSection } from '@/components/sections/HeroSection';
+import { SkillEcosystemSection } from '@/components/sections/SkillEcosystemSection';
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { ExperienceSection } from '@/components/sections/ExperienceSection';
 import { ContactSection } from '@/components/sections/ContactSection';
@@ -18,6 +19,7 @@ const Index = () => {
       
       <main className="relative z-10">
         <HeroSection />
+        <SkillEcosystemSection />
         <ProjectsSection />
         <ExperienceSection />
         <ContactSection />
