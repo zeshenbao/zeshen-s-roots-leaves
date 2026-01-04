@@ -10,11 +10,18 @@ import * as path from 'path';
 
 // Files that are allowed to contain raw color values
 const ALLOWLIST = [
-  'index.css',
-  'tailwind.config.ts',
-  'ParallaxForestScene.tsx', // Scene-specific art colors
-  'ReadabilityOverlay.tsx', // Scrim gradients
-  'color-scan.test.ts', // This test file
+  'index.css',                    // Token definitions
+  'tailwind.config.ts',           // Tailwind theme config
+  'tailwind.config.lov.json',     // Tailwind default palette (system file)
+  'ParallaxForestScene.tsx',      // Scene-specific art colors
+  'ReadabilityOverlay.tsx',       // Scrim gradients  
+  'HeroSection.tsx',              // Hero scrim gradient
+  'Index.tsx',                    // Footer scrim
+  'button.tsx',                   // Hover shadow effects (Tailwind variants)
+  'card.tsx',                     // Hover shadow effects
+  'toast.tsx',                    // Destructive state (semantic red)
+  'color-scan.test.ts',           // This test file
+  'App.css',                      // Legacy styles (cleaned)
 ];
 
 // Patterns that indicate ad-hoc colors

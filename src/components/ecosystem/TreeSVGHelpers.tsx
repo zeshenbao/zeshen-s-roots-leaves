@@ -165,24 +165,24 @@ export function LeafShape({
       <path
         d={leafPath}
         fill={fill}
-        stroke={stroke || (isSelected ? 'hsl(45 80% 70%)' : 'hsl(95 40% 30%)')}
+        stroke={stroke || (isSelected ? 'hsl(var(--secondary))' : 'hsl(var(--border))')}
         strokeWidth={isSelected ? 2 : strokeWidth}
       />
       {/* Center vein */}
       <path
         d={veinPath}
         fill="none"
-        stroke="hsl(95 30% 25% / 0.4)"
+        stroke="hsl(var(--border) / 0.4)"
         strokeWidth={1}
       />
-      {/* Fruit indicator (small berry) */}
+      {/* Fruit indicator (small berry) - uses secondary token */}
       {isFruit && (
         <circle
           cx={width * 0.4}
           cy={-height * 0.2}
           r={5}
-          fill="hsl(38 80% 55%)"
-          stroke="hsl(30 60% 40%)"
+          fill="hsl(var(--secondary))"
+          stroke="hsl(var(--secondary-foreground) / 0.5)"
           strokeWidth={1}
         />
       )}
@@ -219,20 +219,22 @@ export function PublicationIcon({ className }: { className?: string }) {
 }
 
 // ============ NOISE TEXTURE FOR SOIL ============
+// Note: SoilPattern uses procedural noise - not currently used, keeping for reference
+// If used, colors should come from CSS vars passed as props
 
 export function SoilPattern({ id }: { id: string }) {
   return (
     <pattern id={id} patternUnits="userSpaceOnUse" width="100" height="100">
-      <rect width="100" height="100" fill="hsl(30 25% 18%)" />
-      {/* Noise dots */}
+      <rect width="100" height="100" fill="hsl(var(--muted))" />
+      {/* Noise dots using muted tones */}
       {Array.from({ length: 50 }).map((_, i) => (
         <circle
           key={i}
           cx={Math.random() * 100}
           cy={Math.random() * 100}
           r={Math.random() * 2 + 0.5}
-          fill={`hsl(25 ${20 + Math.random() * 20}% ${15 + Math.random() * 10}%)`}
-          opacity={0.3 + Math.random() * 0.4}
+          fill="hsl(var(--muted-foreground))"
+          opacity={0.1 + Math.random() * 0.2}
         />
       ))}
     </pattern>
@@ -241,7 +243,8 @@ export function SoilPattern({ id }: { id: string }) {
 
 // ============ GLOW ANIMATION FILTER ============
 
-export function GlowFilter({ id, color = 'hsl(95 60% 50%)' }: { id: string; color?: string }) {
+// GlowFilter receives color as prop from parent (which uses CSS vars)
+export function GlowFilter({ id, color = 'hsl(var(--primary))' }: { id: string; color?: string }) {
   return (
     <filter id={id} x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
