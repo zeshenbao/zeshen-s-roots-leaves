@@ -33,7 +33,7 @@ export function ContactSection() {
           >
             <Card variant="glass" className="h-full">
               <CardHeader>
-                <CardTitle className="text-xl">Contact Information</CardTitle>
+                <h3 className="text-xl font-semibold text-foreground">Contact Information</h3>
               </CardHeader>
               <CardContent className="space-y-4">
                 <a href={`mailto:${person.email}`} className="flex items-center gap-3 text-foreground hover:text-primary transition-colors">
@@ -86,7 +86,7 @@ export function ContactSection() {
           >
             <Card variant="glass" className="h-full">
               <CardHeader>
-                <CardTitle className="text-xl">Publication</CardTitle>
+                <h3 className="text-xl font-semibold text-foreground">Publication</h3>
               </CardHeader>
               <CardContent>
                 {publications.map(pub => (

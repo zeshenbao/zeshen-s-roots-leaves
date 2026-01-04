@@ -143,9 +143,9 @@ function ProjectCard({ project, index, featured, onOpenCaseStudy }: ProjectCardP
                   )}
                 </Badge>
               </div>
-              <CardTitle className="text-lg leading-snug group-hover:text-primary transition-colors">
+              <h3 className="text-lg font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">
                 {project.title}
-              </CardTitle>
+              </h3>
             </div>
             <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
               {project.date}

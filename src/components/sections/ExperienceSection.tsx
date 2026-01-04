@@ -58,24 +58,25 @@ export function ExperienceSection() {
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
+                          <div className="p-2 rounded-lg bg-primary/10" aria-hidden="true">
                             <Icon className="w-4 h-4 text-primary" />
                           </div>
                           <div>
-                            <CardTitle className="text-lg">{exp.title}</CardTitle>
+                            <h3 className="text-lg font-semibold text-foreground">{exp.title}</h3>
                             <p className="text-sm text-muted-foreground">{exp.organization}</p>
                           </div>
                         </div>
                         <Badge variant="outline" className="text-xs">
+                          <span className="sr-only">Period: </span>
                           {exp.period}
                         </Badge>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <ul className="space-y-2 text-sm text-muted-foreground">
+                      <ul className="space-y-2 text-sm text-muted-foreground" role="list">
                         {exp.bullets.map((bullet, i) => (
                           <li key={i} className="flex gap-2">
-                            <span className="text-primary mt-1">•</span>
+                            <span className="text-primary mt-1" aria-hidden="true">•</span>
                             <span>{bullet}</span>
                           </li>
                         ))}

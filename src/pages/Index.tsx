@@ -2,6 +2,7 @@ import { CinematicBackground } from '@/components/CinematicBackground';
 import { Navigation } from '@/components/Navigation';
 import { CommandPalette } from '@/components/CommandPalette';
 import { BackToTop } from '@/components/BackToTop';
+import { SkipLink } from '@/components/SkipLink';
 import { HeroSection } from '@/components/sections/HeroSection';
 import { AboutSection } from '@/components/sections/AboutSection';
 import { SkillEcosystemSection } from '@/components/sections/SkillEcosystemSection';
@@ -19,12 +20,21 @@ const Index = () => {
       <title>{person.name} — Engineering Physics × AI/ML</title>
       <meta name="description" content={`${person.headline}. Portfolio showcasing projects in generative modeling, reinforcement learning, and robotics.`} />
       
+      {/* Skip link for keyboard users */}
+      <SkipLink targetId="main-content" />
+      
       <CinematicBackground />
       <Navigation />
       <CommandPalette />
       <BackToTop />
       
-      <main className="relative z-10">
+      <main 
+        id="main-content" 
+        className="relative z-10"
+        tabIndex={-1}
+        role="main"
+        aria-label="Main content"
+      >
         <HeroSection />
         <AboutSection />
         <SkillEcosystemSection />
@@ -35,7 +45,10 @@ const Index = () => {
         <ContactSection />
       </main>
       
-      <footer className="relative z-10 py-8 px-6 border-t border-border/50 text-center text-sm text-muted-foreground">
+      <footer 
+        className="relative z-10 py-8 px-6 border-t border-border/50 text-center text-sm text-muted-foreground"
+        role="contentinfo"
+      >
         <p>© {new Date().getFullYear()} {person.name}. Built with care in Stockholm.</p>
       </footer>
     </>
