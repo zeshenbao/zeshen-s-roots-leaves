@@ -25,8 +25,8 @@ interface PortfolioState {
   
   // Side panel
   sidePanelOpen: boolean;
-  sidePanelContent: { type: 'root' | 'leaf'; id: string } | null;
-  openSidePanel: (content: { type: 'root' | 'leaf'; id: string }) => void;
+  sidePanelContent: { type: 'root' | 'leaf' | 'branch'; id: string } | null;
+  openSidePanel: (content: { type: 'root' | 'leaf' | 'branch'; id: string }) => void;
   closeSidePanel: () => void;
   
   // Feature flags
