@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { ArrowDown, Download, Mail, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,22 +7,75 @@ import { person, education } from '@/lib/content';
 import { generateResumePDF } from '@/lib/generate-resume';
 
 export function HeroSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  });
+  
+  // Parallax transforms
+  const heroY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    prefersReducedMotion ? [0, 0] : [0, 150]
+  );
+  
+  const heroOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.5],
+    prefersReducedMotion ? [1, 1] : [1, 0]
+  );
+  
+  const heroScale = useTransform(
+    scrollYProgress,
+    [0, 0.5],
+    prefersReducedMotion ? [1, 1] : [1, 0.95]
+  );
+  
+  const badgeY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    prefersReducedMotion ? [0, 0] : [0, 50]
+  );
+  
+  const arrowOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.15],
+    [1, 0]
+  );
+
   return (
     <section 
+      ref={sectionRef}
       id="home" 
-      className="relative min-h-screen flex items-center justify-center px-6 pt-20"
+      className="relative min-h-screen flex items-center justify-center px-6 pt-20 overflow-hidden"
       aria-labelledby="hero-heading"
     >
+      {/* Background parallax layer */}
+      <motion.div 
+        className="absolute inset-0 -z-10"
+        style={{
+          y: useTransform(scrollYProgress, [0, 1], prefersReducedMotion ? [0, 0] : [0, 200]),
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent opacity-50" />
+      </motion.div>
+      
       <div className="container max-w-5xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
         >
-          <Badge variant="glass" className="mb-6">
-            <MapPin className="w-3 h-3 mr-1" />
-            {person.location}
-          </Badge>
+          <motion.div style={{ y: badgeY }}>
+            <Badge variant="glass" className="mb-6">
+              <MapPin className="w-3 h-3 mr-1" aria-hidden="true" />
+              {person.location}
+            </Badge>
+          </motion.div>
           
           <h1 
             id="hero-heading"
@@ -45,12 +99,12 @@ export function HeroSection() {
               </a>
             </Button>
             <Button variant="heroOutline" size="lg" onClick={generateResumePDF}>
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-4 h-4 mr-2" aria-hidden="true" />
               Download CV
             </Button>
             <Button variant="heroOutline" size="lg" asChild>
               <a href={`mailto:${person.email}`}>
-                <Mail className="w-4 h-4 mr-2" />
+                <Mail className="w-4 h-4 mr-2" aria-hidden="true" />
                 Contact
               </a>
             </Button>
@@ -70,11 +124,12 @@ export function HeroSection() {
         
         <motion.div
           className="absolute bottom-10 left-1/2 -translate-x-1/2"
+          style={{ opacity: arrowOpacity }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, y: [0, 10, 0] }}
           transition={{ delay: 1, duration: 2, repeat: Infinity }}
         >
-          <ArrowDown className="w-6 h-6 text-muted-foreground" />
+          <ArrowDown className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
         </motion.div>
       </div>
     </section>

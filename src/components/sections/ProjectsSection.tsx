@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,13 @@ import { ProjectCaseStudyModal } from '@/components/ProjectCaseStudyModal';
 export function ProjectsSection() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  });
 
   // Sort: featured first, then by date
   const sortedProjects = [...projects].sort((a, b) => {
@@ -27,7 +34,18 @@ export function ProjectsSection() {
   };
 
   return (
-    <section id="projects" className="section-container-alt" aria-labelledby="projects-heading">
+    <section ref={sectionRef} id="projects" className="section-container-alt relative overflow-hidden" aria-labelledby="projects-heading">
+      {/* Parallax background elements */}
+      <motion.div 
+        className="absolute inset-0 -z-10 opacity-20"
+        style={{
+          y: useTransform(scrollYProgress, [0, 1], prefersReducedMotion ? [0, 0] : [-30, 30]),
+        }}
+      >
+        <div className="absolute top-1/4 right-1/6 w-72 h-72 bg-secondary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 left-1/5 w-56 h-56 bg-primary/15 rounded-full blur-3xl" />
+      </motion.div>
+      
       <div className="section-inner">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
