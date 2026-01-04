@@ -11,7 +11,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
-  :root {
+  /* Night mode (default) */
+  :root, .dark {
     /* Core palette - Deep forest meets technology */
     --background: 220 20% 4%;
     --foreground: 45 20% 95%;
@@ -92,6 +93,77 @@
     --sidebar-ring: 145 40% 45%;
   }
 
+  /* Day mode (light theme) */
+  .light {
+    /* Core palette - Bright and fresh */
+    --background: 45 30% 97%;
+    --foreground: 220 25% 15%;
+
+    --card: 45 25% 95%;
+    --card-foreground: 220 20% 20%;
+
+    --popover: 45 30% 98%;
+    --popover-foreground: 220 20% 15%;
+
+    /* Primary - Forest green */
+    --primary: 145 45% 35%;
+    --primary-foreground: 45 30% 98%;
+    --primary-glow: 145 50% 45%;
+
+    /* Secondary - Warm amber */
+    --secondary: 38 70% 45%;
+    --secondary-foreground: 45 30% 98%;
+    --secondary-glow: 38 80% 55%;
+
+    /* Tertiary - Sky blue */
+    --tertiary: 210 60% 45%;
+    --tertiary-foreground: 45 30% 98%;
+
+    --muted: 45 20% 90%;
+    --muted-foreground: 220 15% 40%;
+
+    --accent: 145 30% 88%;
+    --accent-foreground: 145 45% 25%;
+
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 85%;
+    --input: 220 15% 92%;
+    --ring: 145 45% 35%;
+
+    /* Custom tokens for skill ecosystem - day mode */
+    --root-node: 145 50% 35%;
+    --root-node-glow: 145 60% 45%;
+    --leaf-node: 38 65% 45%;
+    --leaf-node-glow: 38 75% 55%;
+    --connection-line: 220 15% 75%;
+    --connection-active: 145 55% 40%;
+
+    /* Gradients - day mode */
+    --gradient-hero: linear-gradient(135deg, hsl(145 35% 90% / 0.8), hsl(200 30% 95% / 0.95));
+    --gradient-card: linear-gradient(180deg, hsl(45 25% 97%) 0%, hsl(45 25% 93%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(145 50% 50% / 0.1) 0%, transparent 70%);
+    --gradient-accent: linear-gradient(135deg, hsl(145 45% 40%), hsl(38 70% 50%));
+    
+    /* Shadows - day mode */
+    --shadow-sm: 0 2px 8px hsl(220 30% 50% / 0.08);
+    --shadow-md: 0 8px 24px hsl(220 30% 50% / 0.12);
+    --shadow-lg: 0 16px 48px hsl(220 30% 50% / 0.15);
+    --shadow-glow: 0 0 40px hsl(145 50% 50% / 0.15);
+    --shadow-glow-accent: 0 0 60px hsl(38 60% 50% / 0.1);
+
+    /* Sidebar tokens - day mode */
+    --sidebar-background: 45 25% 95%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-primary: 145 45% 35%;
+    --sidebar-primary-foreground: 45 30% 98%;
+    --sidebar-accent: 45 20% 90%;
+    --sidebar-accent-foreground: 220 20% 20%;
+    --sidebar-border: 220 15% 85%;
+    --sidebar-ring: 145 45% 35%;
+  }
+
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     :root {
@@ -117,6 +189,17 @@
 
   html {
     scroll-behavior: smooth;
+  }
+  
+  /* Smooth theme transitions */
+  html.light,
+  html.dark {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  html.light body,
+  html.dark body {
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   body {

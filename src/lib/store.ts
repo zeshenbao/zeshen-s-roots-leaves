@@ -1,9 +1,20 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+// Theme types
+export type ThemeMode = 'day' | 'night' | 'system';
 
 interface FeatureFlags {
   backgroundEnabled: boolean;
   skillTreeEnabled: boolean;
   reducedMotion: boolean;
+}
+
+interface ThemeState {
+  themeMode: ThemeMode;
+  resolvedTheme: 'day' | 'night'; // The actual theme after system preference resolution
+  setThemeMode: (mode: ThemeMode) => void;
+  cycleTheme: () => void;
 }
 
 interface PortfolioState {
@@ -43,6 +54,12 @@ const prefersReducedMotion = typeof window !== 'undefined'
   ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
   : false;
 
+// Detect system color scheme preference
+const getSystemTheme = (): 'day' | 'night' => {
+  if (typeof window === 'undefined') return 'night';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
+};
+
 // Detect performance capabilities
 const detectPerformanceTier = (): 'low' | 'medium' | 'high' => {
   if (typeof navigator === 'undefined') return 'medium';
@@ -56,6 +73,52 @@ const detectPerformanceTier = (): 'low' | 'medium' | 'high' => {
   
   return 'medium';
 };
+
+// Theme store with persistence
+export const useThemeStore = create<ThemeState>()(
+  persist(
+    (set, get) => ({
+      themeMode: 'system',
+      resolvedTheme: getSystemTheme(),
+      
+      setThemeMode: (mode) => {
+        const resolved = mode === 'system' ? getSystemTheme() : mode;
+        set({ themeMode: mode, resolvedTheme: resolved });
+        
+        // Apply theme to document
+        if (resolved === 'night') {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+        }
+      },
+      
+      cycleTheme: () => {
+        const current = get().themeMode;
+        const next: ThemeMode = current === 'system' ? 'day' : current === 'day' ? 'night' : 'system';
+        get().setThemeMode(next);
+      },
+    }),
+    {
+      name: 'theme-storage',
+      onRehydrateStorage: () => (state) => {
+        // Apply theme on rehydration
+        if (state) {
+          const resolved = state.themeMode === 'system' ? getSystemTheme() : state.themeMode;
+          if (resolved === 'night') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+          } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+          }
+        }
+      },
+    }
+  )
+);
 
 export const usePortfolioStore = create<PortfolioState>((set) => ({
   // Navigation

@@ -4,6 +4,7 @@ import { Menu, X, Command, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { person } from '@/lib/content';
 import { usePortfolioStore } from '@/lib/store';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navItems = [
   { label: 'Home', href: '#home' },
@@ -66,19 +67,24 @@ export function Navigation() {
               <Command className="w-3 h-3" />K
             </kbd>
           </button>
+          
+          {/* Theme toggle */}
+          <ThemeToggle />
         </div>
         
-        {/* Mobile menu button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileMenuOpen}
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </Button>
+        {/* Mobile: Theme toggle + menu button */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
+        </div>
       </nav>
       
       {/* Mobile menu */}
