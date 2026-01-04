@@ -25,13 +25,17 @@ const SENSITIVE_PATTERNS = [
   /national[_\s-]?id\s*[:=]/gi,        // national_id:
 ];
 
+// Unsafe external link pattern - target="_blank" without proper rel attributes
+// Matches target="_blank" that isn't followed by rel containing both noopener and noreferrer
+const UNSAFE_EXTERNAL_LINK_PATTERN = /target\s*=\s*["']_blank["'][^>]*(?!rel\s*=\s*["'][^"']*noopener)[^>]*>/gi;
+
 export interface ScanResult {
   isClean: boolean;
   violations: Violation[];
 }
 
 export interface Violation {
-  type: 'grade' | 'personnummer' | 'sensitive';
+  type: 'grade' | 'personnummer' | 'sensitive' | 'unsafe-external-link';
   pattern: string;
   match: string;
   context?: string;
@@ -125,4 +129,37 @@ export function validateContentExports(): ScanResult {
   // This would be called during build/test to validate exported content
   // For now, returns clean since we've verified content.ts has no grades
   return { isClean: true, violations: [] };
+}
+
+/**
+ * Scans code for unsafe external links (target="_blank" without rel="noopener noreferrer")
+ */
+export function scanForUnsafeExternalLinks(code: string, context?: string): ScanResult {
+  const violations: Violation[] = [];
+  
+  // Find all anchor tags with target="_blank"
+  const targetBlankPattern = /<a[^>]*target\s*=\s*["']_blank["'][^>]*>/gi;
+  const matches = code.match(targetBlankPattern);
+  
+  if (matches) {
+    for (const match of matches) {
+      // Check if it has proper rel attribute with both noopener and noreferrer
+      const hasNoopener = /rel\s*=\s*["'][^"']*noopener[^"']*["']/i.test(match);
+      const hasNoreferrer = /rel\s*=\s*["'][^"']*noreferrer[^"']*["']/i.test(match);
+      
+      if (!hasNoopener || !hasNoreferrer) {
+        violations.push({
+          type: 'unsafe-external-link',
+          pattern: 'target="_blank" without rel="noopener noreferrer"',
+          match: match.substring(0, 100), // Truncate for readability
+          context,
+        });
+      }
+    }
+  }
+  
+  return {
+    isClean: violations.length === 0,
+    violations,
+  };
 }
