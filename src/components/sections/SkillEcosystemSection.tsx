@@ -7,17 +7,26 @@ import 'd3-transition';
 import { useInView } from 'react-intersection-observer';
 import { 
   treeRoots, treeTrunk, treeBranches, treeLeaves, treeEdges,
-  getLeavesByBranch, getBranchesByRoot, getRootsForBranch, getLeafEvidence, getFruitLeaves,
+  getLeavesByBranch, getLeafEvidence,
   type RootNode, type TrunkNode, type BranchNode, type LeafNode
 } from '@/lib/content';
 import { usePortfolioStore } from '@/lib/store';
 import { useEcosystemNavigation, getLeafNavigationTarget } from '@/lib/navigation';
+import {
+  getVisibleGraph,
+  getConnectedRootsForLeaf,
+  getConnectedLeavesForRoot,
+  getBranchForLeaf,
+  getNodeType,
+  type ViewMode,
+  type VisibleGraph
+} from '@/lib/ecosystem-graph';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   X, Sparkles, GitBranch, Leaf, CircleDot, RotateCcw, Command, Eye, EyeOff, 
   FileText, Briefcase, BookOpen, ZoomIn, ZoomOut, ExternalLink, ArrowUpRight,
-  ChevronRight
+  ChevronRight, Layers, Focus
 } from 'lucide-react';
 import {
   generateRootPath,
@@ -51,7 +60,7 @@ interface VisualLink {
   type: 'feeds' | 'produces';
 }
 
-// Color palette using semantic tokens - minimal palette (green + amber)
+// Color palette - minimal (green + amber)
 const NODE_COLORS = {
   root: {
     math: 'hsl(145 40% 35%)',
@@ -70,16 +79,12 @@ const NODE_COLORS = {
   fruit: 'hsl(35 65% 50%)',
 };
 
-// Stroke widths by hierarchy
 const STROKE_WIDTHS = {
   root: 8,
   trunk: 16,
   branch: 6,
   twig: 2,
 };
-
-// Zoom constraints
-const ZOOM_EXTENT: [[number, number], [number, number]] = [[0.6, 0.6], [2.5, 2.5]];
 
 // ============ COMPONENT ============
 export function SkillEcosystemSection() {
@@ -93,28 +98,26 @@ export function SkillEcosystemSection() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'growing' | 'blooming' | 'glowing' | 'complete'>('idle');
-  const [showFruitsOnly, setShowFruitsOnly] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [transform, setTransform] = useState<ZoomTransform>(zoomIdentity);
+  
+  // View mode state
+  const [viewMode, setViewMode] = useState<ViewMode>('overview');
+  const [showAllWhileFocused, setShowAllWhileFocused] = useState(false);
   
   const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const prefersReducedMotion = useReducedMotion();
   
-  // Navigation hook for deep linking
   const { navigateToProject, navigateToExperience } = useEcosystemNavigation();
   
-  // Lazy loading - only initialize when section is in view
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true,
   });
   
-  // Initialize heavy simulation only when in view
   useEffect(() => {
     if (inView && !isInitialized) {
-      const timeoutId = setTimeout(() => {
-        setIsInitialized(true);
-      }, 100);
+      const timeoutId = setTimeout(() => setIsInitialized(true), 100);
       return () => clearTimeout(timeoutId);
     }
   }, [inView, isInitialized]);
@@ -139,13 +142,13 @@ export function SkillEcosystemSection() {
   const branchY = dimensions.height * 0.38;
   const canopyY = dimensions.height * 0.18;
 
-  // Build initial nodes with branch-based canopy clustering
+  // Build initial nodes
   const initialNodes = useMemo<VisualNode[]>(() => {
     const allNodes: VisualNode[] = [];
-    const { width, height } = dimensions;
+    const { width } = dimensions;
     const centerX = width / 2;
 
-    // Layer 0: Roots (spread underground)
+    // Roots
     treeRoots.forEach((root, i) => {
       const xSpacing = width / (treeRoots.length + 1);
       allNodes.push({
@@ -160,7 +163,7 @@ export function SkillEcosystemSection() {
       });
     });
 
-    // Layer 1: Trunk (center)
+    // Trunk
     allNodes.push({
       id: treeTrunk.id,
       name: treeTrunk.name,
@@ -172,12 +175,11 @@ export function SkillEcosystemSection() {
       data: treeTrunk,
     });
 
-    // Layer 2: Branches (fan out from trunk top)
-    const branchCount = treeBranches.length;
+    // Branches
     treeBranches.forEach((branch, i) => {
       const angleSpread = Math.PI * 0.8;
       const startAngle = -Math.PI / 2 - angleSpread / 2;
-      const angle = startAngle + (i / (branchCount - 1 || 1)) * angleSpread;
+      const angle = startAngle + (i / (treeBranches.length - 1 || 1)) * angleSpread;
       const radius = width * 0.22;
       
       allNodes.push({
@@ -193,7 +195,7 @@ export function SkillEcosystemSection() {
       });
     });
 
-    // Layer 3: Leaves (clustered in canopy zones above each branch)
+    // Leaves
     const leafCountByBranch: Record<string, number> = {};
     treeLeaves.forEach((leaf) => {
       leafCountByBranch[leaf.branchId] = (leafCountByBranch[leaf.branchId] || 0) + 1;
@@ -212,19 +214,16 @@ export function SkillEcosystemSection() {
       const leafIndex = leafIndexByBranch[leaf.branchId]++;
       const totalLeavesInBranch = leafCountByBranch[leaf.branchId];
 
-      // Distribute leaves in an arc above the branch with more spacing
       const arcSpread = Math.PI * 0.5;
-      const branchAngle = Math.atan2(branchNode.y - trunkTopY, branchNode.x - (dimensions.width / 2));
+      const branchAngle = Math.atan2(branchNode.y - trunkTopY, branchNode.x - centerX);
       const leafAngle = branchAngle - arcSpread / 2 + (leafIndex / Math.max(1, totalLeavesInBranch - 1)) * arcSpread;
       
-      // Increased spacing between leaves
       const radiusBase = 90 + leafIndex * 35;
       const radius = radiusBase + Math.sin(globalIndex * 1.5) * 25;
 
-      const evidenceType = (leaf as LeafNode).evidenceType;
       const leafColor = leaf.isFruit 
         ? NODE_COLORS.fruit 
-        : NODE_COLORS.leaf[evidenceType as keyof typeof NODE_COLORS.leaf] || NODE_COLORS.leaf.project;
+        : NODE_COLORS.leaf[leaf.evidenceType as keyof typeof NODE_COLORS.leaf] || NODE_COLORS.leaf.project;
 
       allNodes.push({
         id: leaf.id,
@@ -269,52 +268,38 @@ export function SkillEcosystemSection() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Initialize pan/zoom
+  // Pan/zoom setup
   useEffect(() => {
     if (!svgRef.current || !isInitialized) return;
 
     const svg = select(svgRef.current);
-    
     const zoomBehavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.6, 2.5])
-      .on('zoom', (event) => {
-        setTransform(event.transform);
-      });
+      .on('zoom', (event) => setTransform(event.transform));
 
     svg.call(zoomBehavior);
     zoomBehaviorRef.current = zoomBehavior;
 
-    return () => {
-      svg.on('.zoom', null);
-    };
+    return () => { svg.on('.zoom', null); };
   }, [isInitialized]);
 
   // Zoom controls
   const handleZoomIn = useCallback(() => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    select(svgRef.current)
-      .transition()
-      .duration(300)
-      .call(zoomBehaviorRef.current.scaleBy, 1.3);
+    select(svgRef.current).transition().duration(300).call(zoomBehaviorRef.current.scaleBy, 1.3);
   }, []);
 
   const handleZoomOut = useCallback(() => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    select(svgRef.current)
-      .transition()
-      .duration(300)
-      .call(zoomBehaviorRef.current.scaleBy, 0.7);
+    select(svgRef.current).transition().duration(300).call(zoomBehaviorRef.current.scaleBy, 0.7);
   }, []);
 
   const handleZoomReset = useCallback(() => {
     if (!svgRef.current || !zoomBehaviorRef.current) return;
-    select(svgRef.current)
-      .transition()
-      .duration(300)
-      .call(zoomBehaviorRef.current.transform, zoomIdentity);
+    select(svgRef.current).transition().duration(300).call(zoomBehaviorRef.current.transform, zoomIdentity);
   }, []);
 
-  // Run collision avoidance simulation
+  // Force simulation
   useEffect(() => {
     if (featureFlags.reducedMotion || prefersReducedMotion) {
       setNodes(initialNodes);
@@ -323,11 +308,8 @@ export function SkillEcosystemSection() {
     }
 
     const nodesCopy = initialNodes.map(n => ({ ...n }));
-    
     nodesCopy.forEach(node => {
-      if (node.type !== 'leaf') {
-        node.fy = node.y;
-      }
+      if (node.type !== 'leaf') node.fy = node.y;
     });
 
     const simulation = d3.forceSimulation(nodesCopy as any)
@@ -361,117 +343,95 @@ export function SkillEcosystemSection() {
     return () => { simulation.stop(); };
   }, [initialNodes, dimensions, featureFlags.reducedMotion, prefersReducedMotion]);
 
-  // Get connected nodes for highlighting (full path from leaf to roots)
-  const getConnectedNodes = useCallback((nodeId: string): Set<string> => {
-    const connected = new Set<string>([nodeId]);
+  // Compute visible graph based on current state
+  const visibleGraph = useMemo<VisibleGraph | null>(() => {
+    const selectedNodeId = selectedLeaf || selectedRoot;
+    const selectedNodeType = selectedNodeId ? getNodeType(selectedNodeId) : null;
     
-    // Traverse upstream (toward roots)
-    const traverseUpstream = (id: string) => {
-      treeEdges.forEach(edge => {
-        if (edge.target === id && !connected.has(edge.source)) {
-          connected.add(edge.source);
-          traverseUpstream(edge.source);
-        }
-      });
-    };
-    
-    // Traverse downstream (toward leaves)
-    const traverseDownstream = (id: string) => {
-      treeEdges.forEach(edge => {
-        if (edge.source === id && !connected.has(edge.target)) {
-          connected.add(edge.target);
-          traverseDownstream(edge.target);
-        }
-      });
-    };
-    
-    // Get the node type to determine direction
-    const node = [...treeRoots, treeTrunk, ...treeBranches, ...treeLeaves].find(n => n.id === nodeId);
-    if (!node) return connected;
-    
-    if (node.type === 'root') {
-      // Root selected: highlight downstream
-      connected.add('trunk');
-      traverseDownstream('trunk');
-    } else if (node.type === 'leaf') {
-      // Leaf selected: highlight upstream
-      traverseUpstream(nodeId);
-    } else if (node.type === 'branch') {
-      // Branch: highlight both directions
-      traverseUpstream(nodeId);
-      traverseDownstream(nodeId);
-    }
-    
-    return connected;
-  }, []);
+    return getVisibleGraph({
+      viewMode,
+      selectedNodeId,
+      selectedNodeType,
+      showAllWhileFocused,
+    });
+  }, [viewMode, selectedLeaf, selectedRoot, showAllWhileFocused]);
 
-  // Handle node interactions
+  // Check if a node is visible
+  const isNodeVisible = useCallback((nodeId: string): boolean => {
+    if (!visibleGraph) return true; // null means show all
+    return visibleGraph.nodeIds.has(nodeId);
+  }, [visibleGraph]);
+
+  // Check if an edge is visible
+  const isEdgeVisible = useCallback((edgeId: string): boolean => {
+    if (!visibleGraph) return true;
+    return visibleGraph.edgeIds.has(edgeId);
+  }, [visibleGraph]);
+
+  // Handle node click - auto-switch to focus mode
   const handleNodeClick = useCallback((node: VisualNode) => {
     if (node.type === 'root') {
       const isDeselecting = selectedRoot === node.id;
       setSelectedRoot(isDeselecting ? null : node.id);
       setSelectedLeaf(null);
-      if (!isDeselecting) openSidePanel({ type: 'root', id: node.id });
-      else closeSidePanel();
+      if (!isDeselecting) {
+        setViewMode('focus');
+        openSidePanel({ type: 'root', id: node.id });
+      } else {
+        closeSidePanel();
+      }
     } else if (node.type === 'leaf') {
       const isDeselecting = selectedLeaf === node.id;
       setSelectedLeaf(isDeselecting ? null : node.id);
       setSelectedRoot(null);
-      if (!isDeselecting) openSidePanel({ type: 'leaf', id: node.id });
-      else closeSidePanel();
+      if (!isDeselecting) {
+        setViewMode('focus');
+        openSidePanel({ type: 'leaf', id: node.id });
+      } else {
+        closeSidePanel();
+      }
     } else if (node.type === 'branch') {
       setSelectedRoot(null);
       setSelectedLeaf(null);
+      setViewMode('focus');
       openSidePanel({ type: 'branch', id: node.id });
     }
   }, [selectedRoot, selectedLeaf, setSelectedRoot, setSelectedLeaf, openSidePanel, closeSidePanel]);
 
+  // Reset view
   const resetView = useCallback(() => {
     setSelectedRoot(null);
     setSelectedLeaf(null);
     setHoveredNode(null);
+    setViewMode('overview');
     closeSidePanel();
     handleZoomReset();
   }, [setSelectedRoot, setSelectedLeaf, closeSidePanel, handleZoomReset]);
 
-  // Handle keyboard (Escape to close)
+  // Keyboard handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (sidePanelOpen) {
-          closeSidePanel();
-          setSelectedRoot(null);
-          setSelectedLeaf(null);
-        }
+        resetView();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [sidePanelOpen, closeSidePanel, setSelectedRoot, setSelectedLeaf]);
+  }, [resetView]);
 
-  // Click-away to close side panel
+  // Click-away handler
   useEffect(() => {
     if (!sidePanelOpen) return;
     
     const handleClickAway = (e: MouseEvent) => {
       const target = e.target as Element;
-      
-      // Check if click is inside panel
       if (panelRef.current?.contains(target)) return;
-      
-      // Check if click is on a node (SVG element)
       if (target.closest('.node-interactive')) return;
-      
-      // Check if click is on controls
       if (target.closest('.ecosystem-controls')) return;
       
-      // Close panel
-      closeSidePanel();
-      setSelectedRoot(null);
-      setSelectedLeaf(null);
+      resetView();
     };
     
-    // Small delay to prevent immediate close
     const timeoutId = setTimeout(() => {
       document.addEventListener('click', handleClickAway);
     }, 100);
@@ -480,33 +440,22 @@ export function SkillEcosystemSection() {
       clearTimeout(timeoutId);
       document.removeEventListener('click', handleClickAway);
     };
-  }, [sidePanelOpen, closeSidePanel, setSelectedRoot, setSelectedLeaf]);
+  }, [sidePanelOpen, resetView]);
 
-  // Computed state for highlighting
-  const highlightedNodes = useMemo(() => {
-    if (selectedRoot) return getConnectedNodes(selectedRoot);
-    if (selectedLeaf) return getConnectedNodes(selectedLeaf);
-    if (hoveredNode) return getConnectedNodes(hoveredNode);
-    return new Set<string>();
-  }, [selectedRoot, selectedLeaf, hoveredNode, getConnectedNodes]);
-
-  // Check if any selection is active
-  const hasSelection = selectedRoot || selectedLeaf;
-
+  // Panel data
   const panelData = useMemo(() => {
     if (!sidePanelContent) return null;
     
     if (sidePanelContent.type === 'root') {
       const root = treeRoots.find(r => r.id === sidePanelContent.id);
       if (root) {
-        const branches = getBranchesByRoot(root.id);
-        const leaves = branches.flatMap(b => getLeavesByBranch(b.id));
-        return { nodeType: 'root' as const, root, branches, leaves };
+        const leaves = getConnectedLeavesForRoot(root.id);
+        return { nodeType: 'root' as const, root, leaves };
       }
     } else if (sidePanelContent.type === 'branch') {
       const branch = treeBranches.find(b => b.id === sidePanelContent.id);
       if (branch) {
-        const roots = getRootsForBranch(branch.id);
+        const roots = treeRoots.filter(r => branch.rootIds.includes(r.id));
         const leaves = getLeavesByBranch(branch.id);
         return { nodeType: 'branch' as const, branch, roots, leaves };
       }
@@ -514,25 +463,18 @@ export function SkillEcosystemSection() {
       const leaf = treeLeaves.find(l => l.id === sidePanelContent.id);
       if (leaf) {
         const evidence = getLeafEvidence(leaf);
-        const branch = treeBranches.find(b => b.id === leaf.branchId);
-        const roots = branch ? getRootsForBranch(branch.id) : [];
+        const branch = getBranchForLeaf(leaf.id);
+        const roots = getConnectedRootsForLeaf(leaf.id);
         return { nodeType: 'leaf' as const, leaf, evidence, branch, roots };
       }
     }
     return null;
   }, [sidePanelContent]);
 
-  // Trunk path geometry
+  // Trunk geometry
   const trunkGeometry = useMemo(() => {
-    const centerX = dimensions.width / 2;
-    return generateTrunkPath(centerX, trunkBaseY, centerX, trunkTopY, 24, 12);
+    return generateTrunkPath(dimensions.width / 2, trunkBaseY, dimensions.width / 2, trunkTopY, 24, 12);
   }, [dimensions.width, trunkBaseY, trunkTopY]);
-
-  // Filter leaves for display
-  const visibleNodes = useMemo(() => {
-    if (!showFruitsOnly) return nodes;
-    return nodes.filter(n => n.type !== 'leaf' || n.isFruit);
-  }, [nodes, showFruitsOnly]);
 
   const getEvidenceIcon = (type: string) => {
     switch (type) {
@@ -543,7 +485,6 @@ export function SkillEcosystemSection() {
     }
   };
 
-  // Deep link navigation handler
   const handleDeepLink = useCallback((leaf: LeafNode) => {
     const target = getLeafNavigationTarget(leaf);
     if (!target) return;
@@ -555,10 +496,11 @@ export function SkillEcosystemSection() {
       case 'experience':
         navigateToExperience(target.id);
         break;
-      default:
-        break;
     }
   }, [navigateToProject, navigateToExperience]);
+
+  const hasSelection = selectedRoot || selectedLeaf;
+  const isFocusMode = viewMode === 'focus' && hasSelection;
 
   return (
     <section 
@@ -568,24 +510,18 @@ export function SkillEcosystemSection() {
       aria-labelledby="ecosystem-heading"
     >
       <div className="section-inner">
-        {/* Section Header - improved typography */}
+        {/* Header */}
         <div className="section-header-centered mb-6">
-          <h2 
-            id="ecosystem-heading"
-            className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3"
-          >
+          <h2 id="ecosystem-heading" className="text-3xl md:text-4xl font-display font-bold text-foreground mb-3">
             Skill Ecosystem
           </h2>
           <p className="text-base md:text-lg text-muted-foreground mx-auto text-center max-w-2xl leading-relaxed">
-            An interactive visualization of interconnected competencies. 
-            <span className="text-foreground font-medium"> Roots</span> (foundations) 
-            feed through the trunk into specialized <span className="text-foreground font-medium">branches</span>, 
-            producing <span className="text-foreground font-medium">leaves</span> (projects, research).
+            Click any node to focus on its connections. 
             <span className="text-primary ml-1">★ Golden leaves are top outcomes.</span>
           </p>
         </div>
 
-        {/* Loading state before initialization */}
+        {/* Loading */}
         {!isInitialized && (
           <div className="relative w-full h-[600px] md:h-[700px] glass-card rounded-2xl overflow-hidden flex items-center justify-center">
             <div className="text-center">
@@ -595,63 +531,80 @@ export function SkillEcosystemSection() {
           </div>
         )}
 
-        {/* Main Tree Visualization */}
+        {/* Main Visualization */}
         {isInitialized && (
           <div 
             ref={containerRef}
             className="relative w-full h-[600px] md:h-[700px] glass-card rounded-2xl overflow-hidden"
             style={{ border: '1px solid hsl(var(--border) / 0.3)' }}
           >
-            {/* Controls (top-right) */}
+            {/* Controls */}
             <div className="ecosystem-controls absolute top-4 right-4 z-20 flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-lg p-1.5 shadow-sm border border-border/30">
-              {/* Zoom controls */}
+              {/* View mode toggle */}
               <div className="flex items-center border-r border-border/30 pr-2 mr-1">
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleZoomIn}
-                  className="h-8 w-8"
-                  aria-label="Zoom in"
+                  variant={viewMode === 'overview' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => {
+                    setViewMode('overview');
+                    setSelectedRoot(null);
+                    setSelectedLeaf(null);
+                    closeSidePanel();
+                  }}
+                  className="text-xs h-8 gap-1"
+                  aria-label="Overview mode"
                 >
-                  <ZoomIn className="w-4 h-4" />
+                  <Layers className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Overview</span>
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleZoomOut}
-                  className="h-8 w-8"
-                  aria-label="Zoom out"
+                  variant={viewMode === 'focus' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('focus')}
+                  className="text-xs h-8 gap-1"
+                  aria-label="Focus mode"
+                  disabled={!hasSelection}
                 >
+                  <Focus className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Focus</span>
+                </Button>
+              </div>
+
+              {/* Show all toggle (only in focus mode) */}
+              {isFocusMode && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAllWhileFocused(!showAllWhileFocused)}
+                  className="text-xs gap-1.5 h-8"
+                  aria-label={showAllWhileFocused ? 'Hide unrelated nodes' : 'Show all nodes'}
+                >
+                  {showAllWhileFocused ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">{showAllWhileFocused ? 'Hide others' : 'Show all'}</span>
+                </Button>
+              )}
+
+              {/* Zoom controls */}
+              <div className="flex items-center border-l border-border/30 pl-2 ml-1">
+                <Button variant="ghost" size="icon" onClick={handleZoomIn} className="h-8 w-8" aria-label="Zoom in">
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={handleZoomOut} className="h-8 w-8" aria-label="Zoom out">
                   <ZoomOut className="w-4 h-4" />
                 </Button>
               </div>
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowFruitsOnly(!showFruitsOnly)}
-                className="text-xs gap-1.5 h-8"
-                aria-label={showFruitsOnly ? 'Show all leaves' : 'Show only top outcomes'}
-              >
-                {showFruitsOnly ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline">{showFruitsOnly ? 'All' : 'Highlights'}</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={resetView}
-                className="text-xs gap-1.5 h-8"
-                aria-label="Reset view"
-              >
+              <Button variant="ghost" size="sm" onClick={resetView} className="text-xs gap-1.5 h-8" aria-label="Reset view">
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Reset</span>
               </Button>
+              
               <div className="text-xs text-muted-foreground px-2 hidden lg:flex items-center gap-1">
                 <Command className="w-3 h-3" />K
               </div>
             </div>
 
-            {/* Legend (top-left) - improved typography */}
+            {/* Legend */}
             <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-3 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm border border-border/30">
               <div className="flex items-center gap-1.5">
                 <CircleDot className="w-3.5 h-3.5" style={{ color: NODE_COLORS.root.math }} />
@@ -671,15 +624,22 @@ export function SkillEcosystemSection() {
               </div>
             </div>
 
+            {/* Focus mode indicator */}
+            {isFocusMode && (
+              <div className="absolute bottom-4 left-4 z-20 bg-primary/10 border border-primary/30 text-primary text-xs px-3 py-1.5 rounded-lg flex items-center gap-2">
+                <Focus className="w-3.5 h-3.5" />
+                Focus mode: showing connected path only
+              </div>
+            )}
+
             <svg
               ref={svgRef}
               width={dimensions.width}
               height={dimensions.height}
               className="w-full h-full cursor-grab active:cursor-grabbing"
               role="img"
-              aria-label="Organic skill tree: roots underground, trunk rising, branches spreading, leaves in canopy"
+              aria-label="Skill ecosystem tree visualization"
             >
-              {/* Definitions */}
               <defs>
                 <linearGradient id="soil-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="hsl(30 30% 22%)" stopOpacity="0.6" />
@@ -698,7 +658,6 @@ export function SkillEcosystemSection() {
                   <stop offset="100%" stopColor="hsl(35 40% 40%)" />
                 </linearGradient>
 
-                {/* Enhanced glow filters for highlighted paths */}
                 <GlowFilter id="glow-primary" color="hsl(145 60% 55%)" />
                 <GlowFilter id="glow-fruit" color="hsl(38 80% 60%)" />
                 <GlowFilter id="glow-selection" color="hsl(45 90% 65%)" />
@@ -709,40 +668,24 @@ export function SkillEcosystemSection() {
                 </filter>
               </defs>
 
-              {/* Transform group for pan/zoom */}
               <g ref={gRef} transform={`translate(${transform.x}, ${transform.y}) scale(${transform.k})`}>
-                {/* Soil band */}
-                <rect
-                  x="0"
-                  y={soilY}
-                  width={dimensions.width}
-                  height={dimensions.height - soilY}
-                  fill="url(#soil-gradient)"
-                />
-                <line
-                  x1="0"
-                  y1={soilY}
-                  x2={dimensions.width}
-                  y2={soilY}
-                  stroke="hsl(30 25% 30%)"
-                  strokeWidth="3"
-                  strokeDasharray="12 6"
-                  opacity="0.5"
-                />
+                {/* Soil */}
+                <rect x="0" y={soilY} width={dimensions.width} height={dimensions.height - soilY} fill="url(#soil-gradient)" />
+                <line x1="0" y1={soilY} x2={dimensions.width} y2={soilY} stroke="hsl(30 25% 30%)" strokeWidth="3" strokeDasharray="12 6" opacity="0.5" />
 
-                {/* Root paths with proper glow on selection */}
+                {/* Root paths - only render if visible */}
                 <g className="roots">
                   {nodes.filter(n => n.type === 'root').map((rootNode, i) => {
                     const trunkNode = nodes.find(n => n.type === 'trunk');
                     if (!trunkNode) return null;
                     
-                    const isHighlighted = highlightedNodes.has(rootNode.id);
-                    const shouldGlow = hasSelection && isHighlighted;
-                    const path = generateRootPath(
-                      rootNode.x, rootNode.y,
-                      dimensions.width / 2, trunkBaseY + 10,
-                      i
-                    );
+                    // In focus mode, hide non-visible nodes completely
+                    if (isFocusMode && !showAllWhileFocused && !isNodeVisible(rootNode.id)) {
+                      return null;
+                    }
+                    
+                    const isHighlighted = isNodeVisible(rootNode.id);
+                    const path = generateRootPath(rootNode.x, rootNode.y, dimensions.width / 2, trunkBaseY + 10, i);
 
                     return (
                       <motion.path
@@ -750,10 +693,10 @@ export function SkillEcosystemSection() {
                         d={path}
                         fill="none"
                         stroke={rootNode.color}
-                        strokeWidth={STROKE_WIDTHS.root}
+                        strokeWidth={isHighlighted ? STROKE_WIDTHS.root + 2 : STROKE_WIDTHS.root}
                         strokeLinecap="round"
-                        strokeOpacity={hasSelection ? (isHighlighted ? 1 : 0.15) : 0.8}
-                        filter={shouldGlow ? 'url(#glow-path)' : undefined}
+                        strokeOpacity={isHighlighted ? 1 : 0.3}
+                        filter={isFocusMode && isHighlighted ? 'url(#glow-path)' : undefined}
                         initial={prefersReducedMotion ? { pathLength: 1 } : { pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ delay: i * 0.1, duration: 0.8, ease: 'easeInOut' }}
@@ -762,30 +705,31 @@ export function SkillEcosystemSection() {
                   })}
                 </g>
 
-                {/* Trunk */}
-                <motion.path
-                  d={trunkGeometry.fillPath}
-                  fill="url(#trunk-gradient)"
-                  stroke="hsl(25 30% 20%)"
-                  strokeWidth={2}
-                  opacity={hasSelection ? (highlightedNodes.has('trunk') ? 1 : 0.3) : 1}
-                  filter={hasSelection && highlightedNodes.has('trunk') ? 'url(#glow-path)' : undefined}
-                  initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scaleY: 0 }}
-                  animate={{ opacity: hasSelection ? (highlightedNodes.has('trunk') ? 1 : 0.3) : 1, scaleY: 1 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  style={{ transformOrigin: `${dimensions.width / 2}px ${trunkBaseY}px` }}
-                />
+                {/* Trunk - always visible as orientation but dimmed if not in path */}
+                {(viewMode === 'overview' || isNodeVisible('trunk') || showAllWhileFocused) && (
+                  <motion.path
+                    d={trunkGeometry.fillPath}
+                    fill="url(#trunk-gradient)"
+                    stroke="hsl(25 30% 20%)"
+                    strokeWidth={2}
+                    opacity={isNodeVisible('trunk') ? 1 : 0.2}
+                    filter={isFocusMode && isNodeVisible('trunk') ? 'url(#glow-path)' : undefined}
+                    initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scaleY: 0 }}
+                    animate={{ opacity: isNodeVisible('trunk') ? 1 : 0.2, scaleY: 1 }}
+                    transition={{ delay: 0.3, duration: 0.6 }}
+                    style={{ transformOrigin: `${dimensions.width / 2}px ${trunkBaseY}px` }}
+                  />
+                )}
 
-                {/* Branches with proper glow */}
+                {/* Branch paths */}
                 <g className="branches">
                   {nodes.filter(n => n.type === 'branch').map((branchNode, i) => {
-                    const isHighlighted = highlightedNodes.has(branchNode.id);
-                    const shouldGlow = hasSelection && isHighlighted;
-                    const path = generateBranchPath(
-                      dimensions.width / 2, trunkTopY,
-                      branchNode.x, branchNode.y,
-                      0.25 + i * 0.05
-                    );
+                    if (isFocusMode && !showAllWhileFocused && !isNodeVisible(branchNode.id)) {
+                      return null;
+                    }
+                    
+                    const isHighlighted = isNodeVisible(branchNode.id);
+                    const path = generateBranchPath(dimensions.width / 2, trunkTopY, branchNode.x, branchNode.y, 0.25 + i * 0.05);
 
                     return (
                       <motion.path
@@ -793,10 +737,10 @@ export function SkillEcosystemSection() {
                         d={path}
                         fill="none"
                         stroke="url(#branch-gradient)"
-                        strokeWidth={STROKE_WIDTHS.branch}
+                        strokeWidth={isHighlighted ? STROKE_WIDTHS.branch + 2 : STROKE_WIDTHS.branch}
                         strokeLinecap="round"
-                        strokeOpacity={hasSelection ? (isHighlighted ? 1 : 0.15) : 0.9}
-                        filter={shouldGlow ? 'url(#glow-path)' : undefined}
+                        strokeOpacity={isHighlighted ? 1 : 0.3}
+                        filter={isFocusMode && isHighlighted ? 'url(#glow-path)' : undefined}
                         initial={prefersReducedMotion ? { pathLength: 1 } : { pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ delay: 0.5 + i * 0.08, duration: 0.5, ease: 'easeOut' }}
@@ -805,15 +749,19 @@ export function SkillEcosystemSection() {
                   })}
                 </g>
 
-                {/* Twigs with proper glow */}
+                {/* Twigs */}
                 <g className="twigs">
-                  {visibleNodes.filter(n => n.type === 'leaf').map((leafNode, i) => {
+                  {nodes.filter(n => n.type === 'leaf').map((leafNode, i) => {
+                    if (isFocusMode && !showAllWhileFocused && !isNodeVisible(leafNode.id)) {
+                      return null;
+                    }
+                    
                     const leafData = leafNode.data as LeafNode;
                     const branchNode = nodes.find(n => n.id === leafData.branchId);
                     if (!branchNode) return null;
+                    if (isFocusMode && !showAllWhileFocused && !isNodeVisible(branchNode.id)) return null;
 
-                    const isHighlighted = highlightedNodes.has(leafNode.id);
-                    const shouldGlow = hasSelection && isHighlighted;
+                    const isHighlighted = isNodeVisible(leafNode.id);
                     const path = generateTwigPath(branchNode.x, branchNode.y, leafNode.x, leafNode.y, i);
 
                     return (
@@ -822,10 +770,10 @@ export function SkillEcosystemSection() {
                         d={path}
                         fill="none"
                         stroke="hsl(35 35% 45%)"
-                        strokeWidth={STROKE_WIDTHS.twig}
+                        strokeWidth={isHighlighted ? STROKE_WIDTHS.twig + 1 : STROKE_WIDTHS.twig}
                         strokeLinecap="round"
-                        strokeOpacity={hasSelection ? (isHighlighted ? 0.8 : 0.1) : 0.6}
-                        filter={shouldGlow ? 'url(#glow-path)' : undefined}
+                        strokeOpacity={isHighlighted ? 0.9 : 0.3}
+                        filter={isFocusMode && isHighlighted ? 'url(#glow-path)' : undefined}
                         initial={prefersReducedMotion ? { pathLength: 1 } : { pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ delay: 1 + i * 0.03, duration: 0.3 }}
@@ -837,7 +785,11 @@ export function SkillEcosystemSection() {
                 {/* Root nodes */}
                 <g className="root-nodes">
                   {nodes.filter(n => n.type === 'root').map((node) => {
-                    const isHighlighted = highlightedNodes.has(node.id);
+                    if (isFocusMode && !showAllWhileFocused && !isNodeVisible(node.id)) {
+                      return null;
+                    }
+                    
+                    const isHighlighted = isNodeVisible(node.id);
                     const isSelected = selectedRoot === node.id;
 
                     return (
@@ -845,29 +797,16 @@ export function SkillEcosystemSection() {
                         key={node.id}
                         className="node-interactive"
                         initial={prefersReducedMotion ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-                        animate={{ 
-                          scale: 1, 
-                          opacity: hasSelection ? (isHighlighted ? 1 : 0.2) : 1,
-                          x: node.x,
-                          y: node.y 
-                        }}
+                        animate={{ scale: 1, opacity: isHighlighted ? 1 : 0.3, x: node.x, y: node.y }}
                         transition={{ delay: 0.2, duration: 0.4, type: 'spring' }}
                         style={{ cursor: 'pointer' }}
-                        onMouseEnter={() => {
-                          setHoveredNode(node.id);
-                          setTooltipPos({ x: node.x, y: node.y - 50 });
-                        }}
+                        onMouseEnter={() => { setHoveredNode(node.id); setTooltipPos({ x: node.x, y: node.y - 50 }); }}
                         onMouseLeave={() => setHoveredNode(null)}
                         onClick={() => handleNodeClick(node)}
                         role="button"
                         tabIndex={0}
                         aria-label={`Root: ${node.name}`}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleNodeClick(node);
-                          }
-                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node); } }}
                       >
                         <circle
                           r={isSelected ? 26 : 22}
@@ -876,14 +815,7 @@ export function SkillEcosystemSection() {
                           strokeWidth={isSelected ? 3 : 2}
                           filter={isSelected ? 'url(#glow-selection)' : undefined}
                         />
-                        <text
-                          textAnchor="middle"
-                          dy="0.35em"
-                          fontSize={10}
-                          fill="hsl(45 20% 92%)"
-                          fontWeight={600}
-                          style={{ pointerEvents: 'none' }}
-                        >
+                        <text textAnchor="middle" dy="0.35em" fontSize={10} fill="hsl(45 20% 92%)" fontWeight={600} style={{ pointerEvents: 'none' }}>
                           {node.name.length > 10 ? node.name.slice(0, 9) + '…' : node.name}
                         </text>
                       </motion.g>
@@ -894,52 +826,30 @@ export function SkillEcosystemSection() {
                 {/* Branch nodes */}
                 <g className="branch-nodes">
                   {nodes.filter(n => n.type === 'branch').map((node, i) => {
-                    const isHighlighted = highlightedNodes.has(node.id);
+                    if (isFocusMode && !showAllWhileFocused && !isNodeVisible(node.id)) {
+                      return null;
+                    }
+                    
+                    const isHighlighted = isNodeVisible(node.id);
 
                     return (
                       <motion.g
                         key={node.id}
                         className="node-interactive"
                         initial={prefersReducedMotion ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-                        animate={{ 
-                          scale: 1, 
-                          opacity: hasSelection ? (isHighlighted ? 1 : 0.2) : 1,
-                          x: node.x,
-                          y: node.y 
-                        }}
+                        animate={{ scale: 1, opacity: isHighlighted ? 1 : 0.3, x: node.x, y: node.y }}
                         transition={{ delay: 0.6 + i * 0.08, duration: 0.3 }}
                         style={{ cursor: 'pointer' }}
-                        onMouseEnter={() => {
-                          setHoveredNode(node.id);
-                          setTooltipPos({ x: node.x, y: node.y - 40 });
-                        }}
+                        onMouseEnter={() => { setHoveredNode(node.id); setTooltipPos({ x: node.x, y: node.y - 40 }); }}
                         onMouseLeave={() => setHoveredNode(null)}
                         onClick={() => handleNodeClick(node)}
                         role="button"
                         tabIndex={0}
                         aria-label={`Branch: ${node.name}`}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleNodeClick(node);
-                          }
-                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node); } }}
                       >
-                        <ellipse
-                          rx={36}
-                          ry={14}
-                          fill={node.color}
-                          stroke="hsl(30 25% 25%)"
-                          strokeWidth={1.5}
-                        />
-                        <text
-                          textAnchor="middle"
-                          dy="0.35em"
-                          fontSize={10}
-                          fill="hsl(45 15% 95%)"
-                          fontWeight={500}
-                          style={{ pointerEvents: 'none' }}
-                        >
+                        <ellipse rx={36} ry={14} fill={node.color} stroke="hsl(30 25% 25%)" strokeWidth={1.5} />
+                        <text textAnchor="middle" dy="0.35em" fontSize={10} fill="hsl(45 15% 95%)" fontWeight={500} style={{ pointerEvents: 'none' }}>
                           {node.name.length > 14 ? node.name.slice(0, 13) + '…' : node.name}
                         </text>
                       </motion.g>
@@ -949,9 +859,13 @@ export function SkillEcosystemSection() {
 
                 {/* Leaf nodes */}
                 <g className="leaf-nodes">
-                  {visibleNodes.filter(n => n.type === 'leaf').map((node, i) => {
+                  {nodes.filter(n => n.type === 'leaf').map((node, i) => {
+                    if (isFocusMode && !showAllWhileFocused && !isNodeVisible(node.id)) {
+                      return null;
+                    }
+                    
                     const leafData = node.data as LeafNode;
-                    const isHighlighted = highlightedNodes.has(node.id);
+                    const isHighlighted = isNodeVisible(node.id);
                     const isSelected = selectedLeaf === node.id;
                     const EvidenceIcon = getEvidenceIcon(leafData.evidenceType);
 
@@ -960,32 +874,16 @@ export function SkillEcosystemSection() {
                         key={node.id}
                         className="node-interactive"
                         initial={prefersReducedMotion ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-                        animate={{ 
-                          scale: 1, 
-                          opacity: hasSelection ? (isHighlighted ? 1 : 0.15) : 1
-                        }}
-                        transition={{ 
-                          delay: prefersReducedMotion ? 0 : 1.2 + i * 0.04, 
-                          duration: 0.4, 
-                          type: 'spring',
-                          stiffness: 200 
-                        }}
+                        animate={{ scale: 1, opacity: isHighlighted ? 1 : 0.3 }}
+                        transition={{ delay: prefersReducedMotion ? 0 : 1.2 + i * 0.04, duration: 0.4, type: 'spring', stiffness: 200 }}
                         style={{ cursor: 'pointer' }}
-                        onMouseEnter={() => {
-                          setHoveredNode(node.id);
-                          setTooltipPos({ x: node.x, y: node.y - 55 });
-                        }}
+                        onMouseEnter={() => { setHoveredNode(node.id); setTooltipPos({ x: node.x, y: node.y - 55 }); }}
                         onMouseLeave={() => setHoveredNode(null)}
                         onClick={() => handleNodeClick(node)}
                         role="button"
                         tabIndex={0}
                         aria-label={`${leafData.evidenceType}: ${node.name}`}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleNodeClick(node);
-                          }
-                        }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node); } }}
                       >
                         <LeafShape
                           x={node.x}
@@ -998,23 +896,12 @@ export function SkillEcosystemSection() {
                           isFruit={node.isFruit}
                           filter={isSelected ? 'url(#glow-selection)' : node.isFruit ? 'url(#glow-fruit)' : 'url(#leaf-shadow)'}
                         />
-                        {/* Label below leaf - improved typography */}
-                        <text
-                          x={node.x}
-                          y={node.y + 28}
-                          textAnchor="middle"
-                          fontSize={9}
-                          fill="currentColor"
-                          className="text-foreground"
-                          fontWeight={isSelected ? 600 : 500}
-                          style={{ pointerEvents: 'none' }}
-                        >
+                        <text x={node.x} y={node.y + 28} textAnchor="middle" fontSize={9} fill="currentColor" className="text-foreground" fontWeight={isSelected ? 600 : 500} style={{ pointerEvents: 'none' }}>
                           {isSelected || hoveredNode === node.id 
                             ? (node.name.length > 20 ? node.name.slice(0, 19) + '…' : node.name)
                             : (node.name.length > 14 ? node.name.slice(0, 13) + '…' : node.name)
                           }
                         </text>
-                        {/* Type icon badge */}
                         <g transform={`translate(${node.x + 14}, ${node.y - 20})`}>
                           <circle r={8} fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth={1} />
                           <foreignObject x={-6} y={-6} width={12} height={12}>
@@ -1026,23 +913,10 @@ export function SkillEcosystemSection() {
                   })}
                 </g>
 
-                {/* Light-up glow pass (animation overlay) */}
+                {/* Glow animation */}
                 {animationPhase === 'glowing' && performanceTier !== 'low' && (
-                  <motion.g
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 0.6, 0] }}
-                    transition={{ duration: 1.5, ease: 'easeInOut' }}
-                  >
-                    <motion.path
-                      d={trunkGeometry.fillPath}
-                      fill="none"
-                      stroke="hsl(95 60% 50%)"
-                      strokeWidth={4}
-                      filter="url(#glow-primary)"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 1.2 }}
-                    />
+                  <motion.g initial={{ opacity: 0 }} animate={{ opacity: [0, 0.6, 0] }} transition={{ duration: 1.5, ease: 'easeInOut' }}>
+                    <motion.path d={trunkGeometry.fillPath} fill="none" stroke="hsl(95 60% 50%)" strokeWidth={4} filter="url(#glow-primary)" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.2 }} />
                   </motion.g>
                 )}
               </g>
@@ -1066,32 +940,19 @@ export function SkillEcosystemSection() {
                     const node = nodes.find(n => n.id === hoveredNode);
                     if (!node) return null;
                     
-                    const Icon = node.type === 'root' ? CircleDot : 
-                                 node.type === 'branch' ? GitBranch : 
-                                 node.isFruit ? Sparkles : Leaf;
+                    const Icon = node.type === 'root' ? CircleDot : node.type === 'branch' ? GitBranch : node.isFruit ? Sparkles : Leaf;
                     
                     return (
                       <>
                         <div className="flex items-center gap-2 mb-1.5">
                           <Icon className="w-4 h-4 text-primary" />
                           <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{node.type}</span>
-                          {node.type === 'leaf' && (
-                            <Badge variant="outline" className="text-xs py-0 px-1.5">
-                              {(node.data as LeafNode).evidenceType}
-                            </Badge>
-                          )}
                         </div>
                         <p className="font-semibold text-foreground text-sm leading-snug">{node.name}</p>
-                        {node.type === 'root' && (
-                          <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{(node.data as RootNode).description}</p>
-                        )}
-                        {node.type === 'branch' && (
-                          <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{(node.data as BranchNode).description}</p>
-                        )}
-                        {node.type === 'leaf' && (
-                          <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{(node.data as LeafNode).summary}</p>
-                        )}
-                        <p className="text-xs text-primary mt-2">Click to explore</p>
+                        {node.type === 'root' && <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{(node.data as RootNode).description}</p>}
+                        {node.type === 'branch' && <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{(node.data as BranchNode).description}</p>}
+                        {node.type === 'leaf' && <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">{(node.data as LeafNode).summary}</p>}
+                        <p className="text-xs text-primary mt-2">Click to focus</p>
                       </>
                     );
                   })()}
@@ -1105,13 +966,12 @@ export function SkillEcosystemSection() {
         <AnimatePresence>
           {sidePanelOpen && panelData && (
             <>
-              {/* Backdrop for mobile */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden"
-                onClick={closeSidePanel}
+                onClick={resetView}
               />
               
               <motion.div
@@ -1123,15 +983,7 @@ export function SkillEcosystemSection() {
                 className="fixed right-0 top-0 h-full w-full max-w-md bg-card/98 backdrop-blur-xl border-l border-border z-50 overflow-y-auto shadow-2xl"
               >
                 <div className="p-6">
-                  <button
-                    onClick={() => {
-                      closeSidePanel();
-                      setSelectedRoot(null);
-                      setSelectedLeaf(null);
-                    }}
-                    className="absolute top-4 right-4 p-2 rounded-lg hover:bg-muted transition-colors"
-                    aria-label="Close panel (Escape)"
-                  >
+                  <button onClick={resetView} className="absolute top-4 right-4 p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Close panel (Escape)">
                     <X className="w-5 h-5" />
                   </button>
 
@@ -1141,42 +993,21 @@ export function SkillEcosystemSection() {
                         <CircleDot className="w-3 h-3 mr-1.5" />
                         Foundation
                       </Badge>
-                      <h3 className="text-2xl font-display font-bold text-foreground mb-3 leading-tight">
-                        {panelData.root.name}
-                      </h3>
+                      <h3 className="text-2xl font-display font-bold text-foreground mb-3">{panelData.root.name}</h3>
                       <p className="text-muted-foreground leading-relaxed mb-6">{panelData.root.description}</p>
-                      
-                      {panelData.branches && panelData.branches.length > 0 && (
-                        <div className="mb-6">
-                          <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                            <GitBranch className="w-4 h-4 text-primary" />
-                            Connected Branches
-                          </h4>
-                          <div className="space-y-2">
-                            {panelData.branches.map(branch => (
-                              <div key={branch.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors">
-                                <p className="font-medium text-foreground text-sm">{branch.name}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{branch.description}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                       
                       {panelData.leaves && panelData.leaves.length > 0 && (
                         <div>
                           <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                             <Leaf className="w-4 h-4 text-primary" />
-                            Evidence ({panelData.leaves.length})
+                            Connected Outcomes ({panelData.leaves.length})
                           </h4>
                           <div className="space-y-2">
                             {panelData.leaves.map(leaf => (
                               <div 
                                 key={leaf.id} 
-                                className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                  leaf.isFruit ? 'bg-secondary/20 border border-secondary/30 hover:bg-secondary/30' : 'bg-muted/50 hover:bg-muted'
-                                }`}
-                                onClick={() => openSidePanel({ type: 'leaf', id: leaf.id })}
+                                className={`p-3 rounded-lg cursor-pointer transition-colors ${leaf.isFruit ? 'bg-secondary/20 border border-secondary/30 hover:bg-secondary/30' : 'bg-muted/50 hover:bg-muted'}`}
+                                onClick={() => { setSelectedLeaf(leaf.id); setSelectedRoot(null); openSidePanel({ type: 'leaf', id: leaf.id }); }}
                               >
                                 <div className="flex items-center gap-2">
                                   {leaf.isFruit && <Sparkles className="w-4 h-4 text-secondary" />}
@@ -1198,24 +1029,15 @@ export function SkillEcosystemSection() {
                         <GitBranch className="w-3 h-3 mr-1.5" />
                         Branch
                       </Badge>
-                      <h3 className="text-2xl font-display font-bold text-foreground mb-3 leading-tight">
-                        {panelData.branch.name}
-                      </h3>
+                      <h3 className="text-2xl font-display font-bold text-foreground mb-3">{panelData.branch.name}</h3>
                       <p className="text-muted-foreground leading-relaxed mb-6">{panelData.branch.description}</p>
                       
                       {panelData.roots && panelData.roots.length > 0 && (
                         <div className="mb-6">
-                          <h4 className="text-sm font-semibold text-foreground mb-3">
-                            Built on {panelData.roots.length} foundation{panelData.roots.length > 1 ? 's' : ''}
-                          </h4>
+                          <h4 className="text-sm font-semibold text-foreground mb-3">Built on {panelData.roots.length} foundation{panelData.roots.length > 1 ? 's' : ''}</h4>
                           <div className="flex flex-wrap gap-2">
                             {panelData.roots.map(root => (
-                              <Badge 
-                                key={root.id} 
-                                variant="secondary"
-                                className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                                onClick={() => openSidePanel({ type: 'root', id: root.id })}
-                              >
+                              <Badge key={root.id} variant="secondary" className="cursor-pointer hover:bg-secondary/80" onClick={() => { setSelectedRoot(root.id); setSelectedLeaf(null); openSidePanel({ type: 'root', id: root.id }); }}>
                                 {root.name}
                               </Badge>
                             ))}
@@ -1233,10 +1055,8 @@ export function SkillEcosystemSection() {
                             {panelData.leaves.map(leaf => (
                               <div 
                                 key={leaf.id} 
-                                className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                                  leaf.isFruit ? 'bg-secondary/20 border border-secondary/30 hover:bg-secondary/30' : 'bg-muted/50 hover:bg-muted'
-                                }`}
-                                onClick={() => openSidePanel({ type: 'leaf', id: leaf.id })}
+                                className={`p-3 rounded-lg cursor-pointer transition-colors ${leaf.isFruit ? 'bg-secondary/20 border border-secondary/30 hover:bg-secondary/30' : 'bg-muted/50 hover:bg-muted'}`}
+                                onClick={() => { setSelectedLeaf(leaf.id); setSelectedRoot(null); openSidePanel({ type: 'leaf', id: leaf.id }); }}
                               >
                                 <div className="flex items-center gap-2">
                                   {leaf.isFruit && <Sparkles className="w-4 h-4 text-secondary" />}
@@ -1254,27 +1074,16 @@ export function SkillEcosystemSection() {
 
                   {panelData.nodeType === 'leaf' && panelData.leaf && (
                     <>
-                      <Badge 
-                        variant="outline" 
-                        className={panelData.leaf.isFruit ? 'mb-4 border-secondary bg-secondary/10 text-xs' : 'mb-4 text-xs'}
-                      >
+                      <Badge variant="outline" className={panelData.leaf.isFruit ? 'mb-4 border-secondary bg-secondary/10 text-xs' : 'mb-4 text-xs'}>
                         {panelData.leaf.isFruit ? <Sparkles className="w-3 h-3 mr-1.5" /> : <Leaf className="w-3 h-3 mr-1.5" />}
                         {panelData.leaf.evidenceType}
                       </Badge>
-                      <h3 className="text-2xl font-display font-bold text-foreground mb-3 leading-tight">
-                        {panelData.leaf.name}
-                      </h3>
+                      <h3 className="text-2xl font-display font-bold text-foreground mb-3">{panelData.leaf.name}</h3>
                       <p className="text-muted-foreground leading-relaxed mb-6">{panelData.leaf.summary}</p>
                       
-                      {/* Deep Link Button */}
-                      <Button
-                        onClick={() => handleDeepLink(panelData.leaf!)}
-                        className="w-full mb-6 gap-2"
-                        variant="default"
-                      >
+                      <Button onClick={() => handleDeepLink(panelData.leaf!)} className="w-full mb-6 gap-2" variant="default">
                         <ArrowUpRight className="w-4 h-4" />
-                        View {panelData.leaf.evidenceType === 'project' ? 'Project' : 
-                              panelData.leaf.evidenceType === 'experience' ? 'Experience' : 'Publication'} Details
+                        View {panelData.leaf.evidenceType === 'project' ? 'Project' : panelData.leaf.evidenceType === 'experience' ? 'Experience' : 'Publication'} Details
                         <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
                       </Button>
                       
@@ -1291,28 +1100,9 @@ export function SkillEcosystemSection() {
                               <h4 className="font-semibold text-foreground mb-2 text-sm">Key Points</h4>
                               <ul className="text-sm text-muted-foreground space-y-1.5">
                                 {panelData.evidence.bullets.slice(0, 3).map((bullet, i) => (
-                                  <li key={i} className="flex gap-2">
-                                    <span className="text-primary mt-0.5">•</span>
-                                    <span className="leading-relaxed">{bullet}</span>
-                                  </li>
+                                  <li key={i} className="flex gap-2"><span className="text-primary mt-0.5">•</span><span>{bullet}</span></li>
                                 ))}
                               </ul>
-                            </>
-                          )}
-                          {'venue' in panelData.evidence && (
-                            <>
-                              <h4 className="font-semibold text-foreground mb-2 text-sm">Publication</h4>
-                              <p className="text-sm text-muted-foreground leading-relaxed">{panelData.evidence.venue}</p>
-                              {panelData.evidence.doi && (
-                                <a 
-                                  href={panelData.evidence.doi}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary text-sm hover:underline mt-2 inline-flex items-center gap-1"
-                                >
-                                  View Publication <ExternalLink className="w-3 h-3" />
-                                </a>
-                              )}
                             </>
                           )}
                         </div>
@@ -1320,15 +1110,10 @@ export function SkillEcosystemSection() {
                       
                       {panelData.roots && panelData.roots.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-semibold text-foreground mb-3">Built on these foundations</h4>
+                          <h4 className="text-sm font-semibold text-foreground mb-3">Connected Foundations ({panelData.roots.length})</h4>
                           <div className="flex flex-wrap gap-2">
                             {panelData.roots.map(root => (
-                              <Badge 
-                                key={root.id} 
-                                variant="secondary"
-                                className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                                onClick={() => openSidePanel({ type: 'root', id: root.id })}
-                              >
+                              <Badge key={root.id} variant="secondary" className="cursor-pointer hover:bg-secondary/80" onClick={() => { setSelectedRoot(root.id); setSelectedLeaf(null); openSidePanel({ type: 'root', id: root.id }); }}>
                                 {root.name}
                               </Badge>
                             ))}
