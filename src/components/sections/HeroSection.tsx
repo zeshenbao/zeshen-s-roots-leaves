@@ -56,21 +56,17 @@ export function HeroSection() {
       className="relative min-h-screen flex items-center justify-center px-6 pt-20 overflow-hidden"
       aria-labelledby="hero-heading"
     >
-      {/* Hero content scrim for readability */}
+      {/* Hero content scrim for readability - per spec:
+          Light: white opacity 0.10
+          Dark: black opacity 0.18
+          Scrim is max-w container background, not full-screen */}
       <div 
-        className="absolute inset-0 pointer-events-none transition-all duration-500"
+        className="absolute inset-x-0 top-1/2 -translate-y-1/2 mx-auto max-w-4xl h-[420px] pointer-events-none transition-all duration-500 rounded-3xl"
         style={{
           background: isNight 
-            ? `radial-gradient(ellipse 80% 60% at 50% 45%,
-                hsl(220 18% 6% / 0.6) 0%,
-                hsl(220 18% 6% / 0.35) 60%,
-                transparent 100%
-              )`
-            : `radial-gradient(ellipse 80% 60% at 50% 45%,
-                hsl(40 25% 97% / 0.75) 0%,
-                hsl(40 25% 97% / 0.45) 60%,
-                transparent 100%
-              )`,
+            ? 'rgba(0, 0, 0, 0.18)'
+            : 'rgba(255, 255, 255, 0.10)',
+          backdropFilter: 'blur(1px)',
         }}
       />
       
