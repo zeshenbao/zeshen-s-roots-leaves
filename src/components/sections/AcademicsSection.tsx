@@ -19,15 +19,18 @@ const themeIcons: Record<CourseTheme, string> = {
   'other': '📚',
 };
 
+// Semantic token-based styling - minimal palette
+// All themes use primary/secondary tokens for consistency
+// Differentiated by icons, not rainbow colors
 const themeColors: Record<CourseTheme, string> = {
-  'mathematics': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  'physics': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-  'ml-ai': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  'computing': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-  'control': 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-  'engineering': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  'research': 'bg-rose-500/20 text-rose-300 border-rose-500/30',
-  'other': 'bg-slate-500/20 text-slate-300 border-slate-500/30',
+  'mathematics': 'bg-primary/10 text-primary border-primary/20',
+  'physics': 'bg-primary/10 text-primary border-primary/20',
+  'ml-ai': 'bg-primary/15 text-primary border-primary/25',
+  'computing': 'bg-primary/10 text-primary border-primary/20',
+  'control': 'bg-muted text-muted-foreground border-border',
+  'engineering': 'bg-muted text-muted-foreground border-border',
+  'research': 'bg-primary/15 text-primary border-primary/25',
+  'other': 'bg-muted text-muted-foreground border-border',
 };
 
 const PREVIEW_COUNT = 6;
