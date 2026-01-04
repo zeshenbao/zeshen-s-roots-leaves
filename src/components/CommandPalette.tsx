@@ -1,20 +1,20 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Fuse from 'fuse.js';
-import { treeRoots, treeBranches, treeLeaves, type RootNode, type BranchNode, type LeafNode } from '@/lib/content';
+import { treeRoots, treeBranches, treeLeaves, courses, type RootNode, type BranchNode, type LeafNode, type Course } from '@/lib/content';
 import { usePortfolioStore } from '@/lib/store';
-import { CircleDot, GitBranch, Leaf, Sparkles, Search, Command } from 'lucide-react';
+import { CircleDot, GitBranch, Leaf, Sparkles, Search, Command, GraduationCap } from 'lucide-react';
 
 interface SearchItem {
   id: string;
   name: string;
   description: string;
-  type: 'root' | 'branch' | 'leaf';
+  type: 'root' | 'branch' | 'leaf' | 'course';
   isFruit?: boolean;
-  data: RootNode | BranchNode | LeafNode;
+  data: RootNode | BranchNode | LeafNode | Course;
 }
 
-// Build searchable items from tree data
+// Build searchable items from tree data and courses
 const searchItems: SearchItem[] = [
   ...treeRoots.map(root => ({
     id: root.id,
@@ -37,6 +37,13 @@ const searchItems: SearchItem[] = [
     type: 'leaf' as const,
     isFruit: leaf.isFruit,
     data: leaf,
+  })),
+  ...courses.map(course => ({
+    id: course.id,
+    name: course.nameEn,
+    description: `${course.name} • ${course.credits} credits • ${course.theme}`,
+    type: 'course' as const,
+    data: course,
   })),
 ];
 
@@ -100,7 +107,17 @@ export function CommandPalette() {
 
   // Handle selection
   const handleSelect = useCallback((item: SearchItem) => {
-    // Scroll to ecosystem section
+    // Handle course selection - scroll to academics section
+    if (item.type === 'course') {
+      const academicsSection = document.getElementById('academics');
+      if (academicsSection) {
+        academicsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      setCommandPaletteOpen(false);
+      return;
+    }
+
+    // Scroll to ecosystem section for tree items
     const ecosystemSection = document.getElementById('ecosystem');
     if (ecosystemSection) {
       ecosystemSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -168,6 +185,7 @@ export function CommandPalette() {
   const getIcon = (item: SearchItem) => {
     if (item.type === 'root') return CircleDot;
     if (item.type === 'branch') return GitBranch;
+    if (item.type === 'course') return GraduationCap;
     if (item.isFruit) return Sparkles;
     return Leaf;
   };
@@ -177,6 +195,7 @@ export function CommandPalette() {
       case 'root': return 'Foundation';
       case 'branch': return 'Branch';
       case 'leaf': return 'Evidence';
+      case 'course': return 'Course';
       default: return type;
     }
   };
@@ -216,7 +235,7 @@ export function CommandPalette() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Search roots, branches, and leaves..."
+                  placeholder="Search skills, projects, courses..."
                   className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-base"
                   aria-label="Search"
                   autoComplete="off"
@@ -260,6 +279,7 @@ export function CommandPalette() {
                           flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
                           ${item.type === 'root' ? 'bg-primary/20 text-primary' : 
                             item.type === 'branch' ? 'bg-secondary/20 text-secondary' : 
+                            item.type === 'course' ? 'bg-accent/20 text-accent-foreground' :
                             item.isFruit ? 'bg-secondary/30 text-secondary' : 'bg-muted text-muted-foreground'}
                         `}>
                           <Icon className="w-4 h-4" />
