@@ -8,6 +8,7 @@ import { SkillEcosystemSection } from '@/components/sections/SkillEcosystemSecti
 import { ProjectsSection } from '@/components/sections/ProjectsSection';
 import { ExperienceSection } from '@/components/sections/ExperienceSection';
 import { AcademicsSection } from '@/components/sections/AcademicsSection';
+import { CVSection } from '@/components/sections/CVSection';
 import { ContactSection } from '@/components/sections/ContactSection';
 import { person } from '@/lib/content';
 
@@ -30,6 +31,7 @@ const Index = () => {
         <ProjectsSection />
         <ExperienceSection />
         <AcademicsSection />
+        <CVSection />
         <ContactSection />
       </main>
       

@@ -105,7 +105,7 @@ function addExperienceEntry(state: PDFState, entry: {
   state.y += 2;
 }
 
-export function generateResumePDF(): void {
+function createResumePDF(): jsPDF {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -226,7 +226,21 @@ export function generateResumePDF(): void {
   doc.text(`Programming: ${progLangs}`, MARGIN, state.y);
   state.y += LINE_HEIGHT;
   
-  // Save the PDF
+  return doc;
+}
+
+export function generateResumePDF(): void {
+  const doc = createResumePDF();
   const fileName = `${person.name.replace(/\s+/g, '_')}_Resume.pdf`;
   doc.save(fileName);
+}
+
+export function generateResumePDFBlob(): Blob {
+  const doc = createResumePDF();
+  return doc.output('blob');
+}
+
+export function generateResumePDFDataUri(): string {
+  const doc = createResumePDF();
+  return doc.output('datauristring');
 }
