@@ -49,6 +49,15 @@ export function HeroSection() {
     [1, 0]
   );
 
+  // Text shadow for readability without overlays
+  const textShadow = isNight
+    ? '0 2px 20px rgba(0,0,0,0.8), 0 1px 3px rgba(0,0,0,0.9)'
+    : '0 2px 20px rgba(255,255,255,0.9), 0 1px 3px rgba(255,255,255,1)';
+
+  const subtleShadow = isNight
+    ? '0 1px 12px rgba(0,0,0,0.7)'
+    : '0 1px 12px rgba(255,255,255,0.8)';
+
   return (
     <section 
       ref={sectionRef}
@@ -56,20 +65,6 @@ export function HeroSection() {
       className="relative min-h-screen flex items-center justify-center px-6 pt-20 overflow-hidden"
       aria-labelledby="hero-heading"
     >
-      {/* Hero content scrim for readability - per spec:
-          Light: white opacity 0.10
-          Dark: black opacity 0.18
-          Scrim is max-w container background, not full-screen */}
-      <div 
-        className="absolute inset-x-0 top-1/2 -translate-y-1/2 mx-auto max-w-4xl h-[420px] pointer-events-none transition-all duration-500 rounded-3xl"
-        style={{
-          background: isNight 
-            ? 'rgba(0, 0, 0, 0.18)'
-            : 'rgba(255, 255, 255, 0.10)',
-          backdropFilter: 'blur(1px)',
-        }}
-      />
-      
       <div className="container max-w-5xl mx-auto text-center relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -87,15 +82,22 @@ export function HeroSection() {
           <h1 
             id="hero-heading"
             className="text-display-xl text-foreground mb-6"
+            style={{ textShadow }}
           >
             {person.name}
           </h1>
           
-          <p className="text-xl sm:text-2xl text-primary font-medium mb-4">
+          <p 
+            className="text-xl sm:text-2xl text-primary font-medium mb-4"
+            style={{ textShadow: subtleShadow }}
+          >
             {person.headline}
           </p>
           
-          <p className="text-body-lg max-w-2xl mx-auto mb-8">
+          <p 
+            className="text-body-lg max-w-2xl mx-auto mb-8"
+            style={{ textShadow: subtleShadow }}
+          >
             {education[0].degree} at {education[0].institution}
           </p>
           
@@ -117,7 +119,10 @@ export function HeroSection() {
             </Button>
           </div>
           
-          <div className="flex items-center justify-center gap-6 text-sm">
+          <div 
+            className="flex items-center justify-center gap-6 text-sm"
+            style={{ textShadow: subtleShadow }}
+          >
             <a href={`mailto:${person.email}`} className="flex items-center gap-2 link-subtle">
               <Mail className="w-4 h-4" aria-hidden="true" />
               {person.email}
@@ -129,7 +134,7 @@ export function HeroSection() {
           </div>
         </motion.div>
         
-        {/* Scroll indicator arrow - positioned relative to viewport bottom */}
+        {/* Scroll indicator arrow */}
         <motion.a
           href="#about"
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20 p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
