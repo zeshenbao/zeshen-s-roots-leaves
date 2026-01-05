@@ -129,15 +129,18 @@ export function HeroSection() {
           </div>
         </motion.div>
         
-        <motion.div
-          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+        {/* Scroll indicator arrow - positioned relative to viewport bottom */}
+        <motion.a
+          href="#about"
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-20 p-2 rounded-full hover:bg-foreground/5 transition-colors cursor-pointer"
           style={{ opacity: arrowOpacity }}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1, y: [0, 10, 0] }}
-          transition={{ delay: 1, duration: 2, repeat: Infinity }}
+          animate={{ opacity: 1, y: [0, 8, 0] }}
+          transition={{ delay: 1, duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          aria-label="Scroll to about section"
         >
-          <ArrowDown className="w-6 h-6 text-muted-foreground" aria-hidden="true" />
-        </motion.div>
+          <ArrowDown className="w-6 h-6 text-muted-foreground" />
+        </motion.a>
       </div>
     </section>
   );
