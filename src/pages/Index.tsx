@@ -69,13 +69,16 @@ const Index = () => {
       </main>
       
       <footer 
-        className="relative z-10 py-8 px-6 border-t border-border/30 text-center"
+        className="relative z-10 py-8 px-6 text-center"
         role="contentinfo"
         style={{
           background: isNight 
-            ? 'hsl(220 25% 8% / 0.8)'
-            : 'hsl(45 30% 98% / 0.85)',
-          backdropFilter: 'blur(8px)',
+            ? 'hsl(220 20% 10% / 0.9)'
+            : 'hsl(45 25% 96% / 0.9)',
+          backdropFilter: 'blur(12px)',
+          borderTop: isNight
+            ? '1px solid hsl(220 15% 18% / 0.5)'
+            : '1px solid hsl(40 20% 88% / 0.6)',
         }}
       >
         <p className="text-sm text-muted-foreground">

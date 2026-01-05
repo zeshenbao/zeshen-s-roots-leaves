@@ -292,7 +292,7 @@
   }
   
   .section-container-alt {
-    @apply py-24 px-6 bg-muted/10;
+    @apply py-24 px-6;
   }
   
   .section-inner {

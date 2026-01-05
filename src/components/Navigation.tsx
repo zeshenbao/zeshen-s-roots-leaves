@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Command, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { person } from '@/lib/content';
-import { usePortfolioStore } from '@/lib/store';
+import { usePortfolioStore, useThemeStore } from '@/lib/store';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useActiveSection } from '@/hooks/useActiveSection';
 
@@ -32,10 +32,17 @@ export function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const { resolvedTheme } = useThemeStore();
+  const isNight = resolvedTheme === 'night';
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-background/80 backdrop-blur-xl border-b border-border/50' : ''
+        isScrolled 
+          ? isNight
+            ? 'bg-[hsl(220_20%_10%/0.9)] backdrop-blur-xl border-b border-[hsl(220_15%_20%/0.5)]'
+            : 'bg-[hsl(45_25%_96%/0.9)] backdrop-blur-xl border-b border-[hsl(40_20%_85%/0.6)]'
+          : ''
       }`}
       role="banner"
     >
@@ -103,7 +110,11 @@ export function Navigation() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border"
+            className={`md:hidden border-b ${
+              isNight 
+                ? 'bg-[hsl(220_20%_10%/0.95)] backdrop-blur-xl border-[hsl(220_15%_20%/0.5)]'
+                : 'bg-[hsl(45_25%_96%/0.95)] backdrop-blur-xl border-[hsl(40_20%_85%/0.6)]'
+            }`}
           >
             <ul className="container px-6 py-4 space-y-2">
               {navItems.map(item => (
