@@ -19,8 +19,8 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         // Hero variants for landing page
-        hero: "bg-primary text-primary-foreground font-semibold shadow-glow hover:shadow-[0_0_50px_hsl(145_50%_40%/0.4)] hover:-translate-y-0.5 hover:bg-primary/90 transition-all duration-300",
-        heroOutline: "border-2 border-primary/50 text-foreground hover:border-primary hover:bg-primary/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5",
+        hero: "bg-primary text-primary-foreground font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:bg-primary/90 transition-all duration-300",
+        heroOutline: "border-2 border-foreground/20 bg-card/80 backdrop-blur-md text-foreground hover:border-primary hover:bg-card/90 transition-all duration-300 hover:-translate-y-0.5 shadow-md",
         // Accent button
         accent: "bg-gradient-to-r from-primary to-secondary text-primary-foreground font-semibold shadow-elevated hover:shadow-glow-accent hover:-translate-y-0.5 transition-all duration-300",
         // Subtle glass button

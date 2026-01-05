@@ -28,7 +28,7 @@ const badgeVariants = cva(
         mlAi: "border-secondary/30 bg-secondary/10 text-secondary",
         computing: "border-primary/30 bg-primary/10 text-primary",
         // Subtle glass
-        glass: "border-border/30 bg-card/50 backdrop-blur-sm text-foreground",
+        glass: "border-border/40 bg-card/80 backdrop-blur-md text-foreground shadow-sm",
       },
     },
     defaultVariants: {
